@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>회상 - 산울림 (가사·코드)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { --ly: 26px; --ch: 22px; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 15mm 10mm 10mm; overflow: hidden; }
+  h1 { text-align: center; font-size: 36px; margin: 0 0 6px; }
+  .info { text-align: center; color: #444; font-size: 16px; margin-bottom: 26px; }
+  .stanza { margin-bottom: 30px; }
+  .line { margin: 0 0 18px; line-height: 1; white-space: nowrap; }
+  .seg { display: inline-block; vertical-align: bottom; }
+  .seg b { display: block; height: calc(var(--ch) * 1.25); font-size: var(--ch); color: #C00000; font-weight: 800; }
+  .seg span { display: block; font-size: var(--ly); font-weight: bold; white-space: pre; }
+  .bar { display: inline-block; vertical-align: bottom; box-sizing: border-box; width: 2px; height: calc(var(--ch) * 1.25 + var(--ly)); margin: 0 5px -2px; background: #666; }
+  .line > .bar:first-child { margin-left: -12px; }
+  .bar.end { width: 7px; background: none; border-left: 2px solid #666; border-right: 4px solid #333; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>회상</h1>
+  <div class="info">산울림 &nbsp;·&nbsp; Key: A</div>
+  <div id="song"></div>
+</div>
+<script>
+// [코드]는 바로 뒤 음절 위에 표시, | 는 마디선, || 는 끝마디선
+const song = [
+  [
+    "길을 걸었|[A]지 [A7]누군가 옆에 있|[D]다고 느꼈을|[A]때 나는 알아버|[E]렸[E7]네",
+    "이미 그대 떠난|[A]후라는 [A7]걸 나는 혼자 걷|[D]고 있던 거지",
+    "|[A]갑자기|[E]바람이 차가워|[A]지네",
+  ],
+  [
+    "마음은|[A]얼고 나는 그 곳에|[D]서서 조금|[A]도 움직일 수|[E]없었[E7]지",
+    "마치 얼어버린|[A]사람처럼 나는 놀라서|[D]있던 거지",
+    "|[A]달빛이|[E]숨어 흐느끼고|[A]있네",
+  ],
+  [
+    "|[D]음- 떠나버린|[A]그 사람|[D]음- 생각|[A]나[A7]네",
+    "|[D]음- 돌아선|[A]그 사람|[D]음- 생각나|[E]네",
+  ],
+  [
+    "묻지 않|[A]았지 왜 나를 떠나느냐|[D]고 하|[A]지만 마음 너무 아|[E]팠[E7]네",
+    "이미 그대 돌아|[A]서 있는 걸 혼자 어쩔 수|[D]없었지",
+    "|[A]미운 건|[E]오히려 나|[A]였어",
+    "|[A]갑자기|[E]바람이 차가워|[A]지네||",
+  ],
+];
+
+const root = document.getElementById("song");
+for (const lines of song) {
+  const stanza = document.createElement("div");
+  stanza.className = "stanza";
+  root.appendChild(stanza);
+  for (const line of lines) {
+    const div = document.createElement("div");
+    div.className = "line";
+    for (const part of line.split(/(\|\|?)|(?=\[)/).filter(Boolean)) {
+      if (part[0] === "|") {
+        const bar = document.createElement("span");
+        bar.className = part === "||" ? "bar end" : "bar";
+        div.appendChild(bar);
+        continue;
+      }
+      const m = part.match(/^\[([^\]]+)\](.*)$/);
+      const seg = document.createElement("span");
+      seg.className = "seg";
+      seg.innerHTML = `<b>${m ? m[1] : ""}</b><span></span>`;
+      seg.lastChild.textContent = m ? m[2] : part;
+      div.appendChild(seg);
+    }
+    stanza.appendChild(div);
+  }
+}
+
+// A4 한 장의 폭과 높이에 맞을 때까지 글자 크기를 줄임
+const page = document.querySelector(".page");
+const lineEls = [...document.querySelectorAll(".line")];
+for (let ly = 28; ly >= 16; ly--) {
+  document.documentElement.style.setProperty("--ly", ly + "px");
+  document.documentElement.style.setProperty("--ch", Math.round(ly * 0.85) + "px");
+  const tooWide = lineEls.some(l => l.scrollWidth > l.clientWidth);
+  if (!tooWide && page.scrollHeight <= page.clientHeight) break;
+}
+</script>
+</body>
+</html>

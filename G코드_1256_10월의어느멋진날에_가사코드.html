@@ -14,7 +14,10 @@
   .line { margin: 0 0 22px; line-height: 1; white-space: nowrap; }
   .seg { display: inline-block; vertical-align: bottom; }
   .seg b { display: block; height: 27px; font-size: 22px; color: #c00000; font-weight: 800; }
-  .seg span { display: block; font-size: 26px; font-weight: bold; white-space: pre; }
+  .seg span { display: block; font-size: 25px; font-weight: bold; white-space: pre; }
+  .bar { display: inline-block; vertical-align: bottom; box-sizing: border-box; width: 2px; height: 52px; margin: 0 5px -2px; background: #666; }
+  .line > .bar:first-child { margin-left: -12px; }
+  .bar.end { width: 7px; background: none; border-left: 2px solid #666; border-right: 4px solid #333; }
 </style>
 </head>
 <body>
@@ -24,23 +27,23 @@
   <div id="song"></div>
 </div>
 <script>
-// [코드]는 바로 뒤 음절 위에 표시
+// [코드]는 바로 뒤 음절 위에 표시, | 는 마디선, || 는 끝마디선
 const song = [
   ["1절", [
-    "눈을 [G]뜨기 힘[Am]든 가을[D7]보다 높[G]은 저 하[Em]늘이 기[A]분 좋",
-    "[D]아~ 휴일 [G]아침이[Am]면 나를 [D7]깨운 전[G]화 오[Em]늘은 어[Am]디서 무",
-    "[D]얼~ 할[G]까 창~[G]밖에 앉[Am]은 바람 [D]한 점에[G]도 사랑[Em]은 가[F#]득한",
-    "[B]걸~ 널~ [G]만난 세[Am]상 더는 [D]소원 없[Em]어 바람[Am]은 죄가 [D]될 테니[G]까~",
+    "눈을|[G]뜨기 힘[Am]든 가을|[D7]보다 높[G]은 저 하|[Em]늘이 기[A]분 좋",
+    "|[D]아~ 휴일|[G]아침이[Am]면 나를|[D7]깨운 전[G]화 오|[Em]늘은 어[Am]디서 무",
+    "|[D]얼~ 할[G]까 창~|[G]밖에 앉[Am]은 바람|[D]한 점에[G]도 사랑|[Em]은 가[F#]득한",
+    "|[B]걸~ 널~|[G]만난 세[Am]상 더는|[D]소원 없[Em]어 바램|[Am]은 죄가 [D]될 테니|[G]까~|",
   ]],
   ["2절", [
-    "가끔 [G]두려워[Am]져 지난 [D7]밤 꿈처[G]럼 사라[Em]질~까 [A]기도",
-    "[D]해~ 매일 [G]너를 보[Am]고 너의 [D7]손을 잡[G]고 내 [Em]곁에 있[Am]는 너를",
-    "[D]확~ 인[G]해 살아 [G]가는 이[Am]유 꿈을 [D]꾸는 이[G]유 모두[Em]가 너[F#]라는",
-    "[B]걸~ 네가 [G]있는 세[Am]상 살아 [D]가는 동[Em]안 더 좋[Am]은 것은 [D]없을 거[G]야~",
+    "가끔|[G]두려워[Am]져 지난|[D7]밤 꿈처[G]럼 사라|[Em]질~까 [A]기도",
+    "|[D]해~ 매일|[G]너를 보[Am]고 너의|[D7]손을 잡[G]고 내|[Em]곁에 있[Am]는 너를",
+    "|[D]확~ 인[G]해 살아|[G]가는 이[Am]유 꿈을|[D]꾸는 이[G]유 모두|[Em]가 너[F#]라는",
+    "|[B]걸~ 네가|[G]있는 세[Am]상 살아|[D]가는 동[Em]안 더 좋|[Am]은 것은 [D]없을 거|[G]야~|",
   ]],
   ["마지막", [
-    "… 더 좋[Am]은 것은 [D]없을 거[G]야~",
-    "시월[Am]의 어느 [D]멋진 날[G]에~",
+    "… 더 좋|[Am]은 것은 [D]없을 거|[G]야~|",
+    "시월|[Am]의 어느 [D]멋진 날|[G]에~||",
   ]],
 ];
 
@@ -52,7 +55,13 @@ for (const [name, lines] of song) {
   for (const line of lines) {
     const div = document.createElement("div");
     div.className = "line";
-    for (const part of line.split(/(?=\[)/)) {
+    for (const part of line.split(/(\|\|?)|(?=\[)/).filter(Boolean)) {
+      if (part[0] === "|") {
+        const bar = document.createElement("span");
+        bar.className = part === "||" ? "bar end" : "bar";
+        div.appendChild(bar);
+        continue;
+      }
       const m = part.match(/^\[([^\]]+)\](.*)$/);
       const seg = document.createElement("span");
       seg.className = "seg";
