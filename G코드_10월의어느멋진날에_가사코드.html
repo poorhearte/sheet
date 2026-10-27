@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>10월의 어느 멋진 날에 (가사·코드)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 13mm 10mm 10mm; overflow: hidden; }
+  h1 { text-align: center; font-size: 36px; margin: 0 0 6px; }
+  .info { text-align: center; color: #444; font-size: 16px; margin-bottom: 14px; }
+  h2 { font-size: 18px; color: #333; border-bottom: 2px solid #999; padding-bottom: 4px; margin: 26px 0 10px; }
+  .line { margin: 0 0 22px; line-height: 1; white-space: nowrap; }
+  .seg { display: inline-block; vertical-align: bottom; }
+  .seg b { display: block; height: 27px; font-size: 22px; color: #c00000; font-weight: 800; }
+  .seg span { display: block; font-size: 26px; font-weight: bold; white-space: pre; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>10월의 어느 멋진 날에</h1>
+  <div class="info">Key: G &nbsp;·&nbsp; 6/8</div>
+  <div id="song"></div>
+</div>
+<script>
+// [코드]는 바로 뒤 음절 위에 표시
+const song = [
+  ["1절", [
+    "눈을 [G]뜨기 힘[Am]든 가을[D7]보다 높[G]은 저 하[Em]늘이 기[A]분 좋",
+    "[D]아~ 휴일 [G]아침이[Am]면 나를 [D7]깨운 전[G]화 오[Em]늘은 어[Am]디서 무",
+    "[D]얼~ 할[G]까 창~[G]밖에 앉[Am]은 바람 [D]한 점에[G]도 사랑[Em]은 가[F#]득한",
+    "[B]걸~ 널~ [G]만난 세[Am]상 더는 [D]소원 없[Em]어 바람[Am]은 죄가 [D]될 테니[G]까~",
+  ]],
+  ["2절", [
+    "가끔 [G]두려워[Am]져 지난 [D7]밤 꿈처[G]럼 사라[Em]질~까 [A]기도",
+    "[D]해~ 매일 [G]너를 보[Am]고 너의 [D7]손을 잡[G]고 내 [Em]곁에 있[Am]는 너를",
+    "[D]확~ 인[G]해 살아 [G]가는 이[Am]유 꿈을 [D]꾸는 이[G]유 모두[Em]가 너[F#]라는",
+    "[B]걸~ 네가 [G]있는 세[Am]상 살아 [D]가는 동[Em]안 더 좋[Am]은 것은 [D]없을 거[G]야~",
+  ]],
+  ["마지막", [
+    "… 더 좋[Am]은 것은 [D]없을 거[G]야~",
+    "시월[Am]의 어느 [D]멋진 날[G]에~",
+  ]],
+];
+
+const root = document.getElementById("song");
+for (const [name, lines] of song) {
+  const h = document.createElement("h2");
+  h.textContent = name;
+  root.appendChild(h);
+  for (const line of lines) {
+    const div = document.createElement("div");
+    div.className = "line";
+    for (const part of line.split(/(?=\[)/)) {
+      const m = part.match(/^\[([^\]]+)\](.*)$/);
+      const seg = document.createElement("span");
+      seg.className = "seg";
+      seg.innerHTML = `<b>${m ? m[1] : ""}</b><span></span>`;
+      seg.lastChild.textContent = m ? m[2] : part;
+      div.appendChild(seg);
+    }
+    root.appendChild(div);
+  }
+}
+</script>
+</body>
+</html>
