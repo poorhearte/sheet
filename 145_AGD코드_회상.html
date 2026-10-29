@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>회상 - 산울림 (A·G·D 코드)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { --ly: 26px; --ch: 18px; --a: #C00000; --g: #0057B8; --d: #1E7B34; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 9mm 6mm; overflow: hidden; }
+  .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  h1 { font-size: 34px; margin: 0; }
+  h2 { margin: 0; }
+  .info { text-align: center; color: #444; font-size: 16px; margin-bottom: 16px; }
+  .info b { font-weight: 800; }
+  .stanza { margin-bottom: 12px; }
+  .line { margin: 0 0 5px; line-height: 1; white-space: nowrap; }
+  .seg { display: inline-block; vertical-align: bottom; }
+  .seg i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; padding-right: 4px; }
+  .seg i.a { color: var(--a); }
+  .seg i.g { color: var(--g); }
+  .seg i.d { color: var(--d); }
+  .seg span { display: block; font-size: var(--ly); font-weight: bold; white-space: pre; }
+  .bar { display: inline-block; vertical-align: bottom; box-sizing: border-box; width: 2px; height: calc(var(--ch) * 3.06 + var(--ly)); margin: 0 5px -2px; background: #666; }
+  .line > .bar:first-child { margin-left: -12px; }
+  .time { display: inline-flex; flex-direction: column; vertical-align: bottom; margin: 0 10px -2px 0; font-family: "Times New Roman", serif; font-size: calc(var(--ly) * 1.15); font-weight: bold; line-height: 0.85; text-align: center; }
+  .bar.end { width: 7px; background: none; border-left: 2px solid #666; border-right: 4px solid #333; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="title"><h1>회상</h1><h2>산울림8집(1982)</h2></div>
+  <!-- <div class="info">산울림 &nbsp;·&nbsp; <b style="color:var(--a)">A코드</b> / <b style="color:var(--g)">G코드</b> / <b style="color:var(--d)">D코드</b> (위에서부터)</div> -->
+  <div id="song"></div>
+</div>
+<script>
+// [코드]는 바로 뒤 음절 위에 표시(A코드 기준), | 는 마디선, || 는 끝마디선
+// 마디와 코드 위치는 145_D코드_회상.png 악보 기준 (D→A, G→D, A7→E7로 옮김)
+const song = [
+  [
+    "{4/4}[@]길을 걸었|[A]지 누군가 옆에 있다|[D]고 느꼈을 때-|[A]- 나는 알아버렸",
+    "|[E7]네 이미 그대 떠난|[A]후라는 걸- 나는 혼자 걷고|[D]있던 거지-",
+    "|[A]갑자기 바[E7]람이 차가워 지-|[A]네",
+  ],
+  [
+    "마음은 얼|[A]고 나는 그 곳에 서|[D]서 조금도-|[A]- 움직일 수 없었",
+    "|[E7]지 마치 얼어버린|[A]사람처럼- 나는 놀라서 있|[D]던- 거지-",
+    "|[A]달빛이- [E7]숨어 흐느끼고|[A]있네-",
+  ],
+  [
+    "|[D]음- 떠나버린|[A]그 사람-|[D]음- 생각나네|[A]-",
+    "|[D]음- 돌아선|[A]그 사람-|[D]음- 생각나네",
+  ],
+  [
+    "|[E7]- 묻지 않았|[A]지 왜 나를 떠나느냐|[D]고 하지만|[A]- 마음 너무 아팠",
+    "|[E7]네 이미 그대 돌아|[A]서 있는 걸- 혼자 어쩔 수|[D]없었지-",
+    "|[A]미운 건-|[E7]오히려 나였어|[A]-||",
+  ],
+];
+
+// A코드를 기준으로 반음 단위로 옮김 (A→G: -2, A→D: +5)
+const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
+function transpose(chord, steps) {
+  const m = chord.match(/^([A-G][#b]?)(.*)$/);
+  const root = FLAT[m[1]] || m[1];
+  return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
+}
+const KEYS = [["a", 0, "A코드"], ["g", -2, "G코드"], ["d", 5, "D코드"]];
+// 7코드는 괄호로 감싸서 표시, 예: (A7)
+const label = c => /7$/.test(c) ? `(${c})` : c;
+
+const root = document.getElementById("song");
+for (const lines of song) {
+  const stanza = document.createElement("div");
+  stanza.className = "stanza";
+  root.appendChild(stanza);
+  for (const line of lines) {
+    const div = document.createElement("div");
+    div.className = "line";
+    // {4/4} 같은 표시는 줄 맨 앞에 박자표로 표시
+    const ts = line.match(/^\{(\d+)\/(\d+)\}/);
+    if (ts) {
+      const time = document.createElement("span");
+      time.className = "time";
+      time.innerHTML = `<span>${ts[1]}</span><span>${ts[2]}</span>`;
+      div.appendChild(time);
+    }
+    for (const part of line.replace(/^\{\d+\/\d+\}/, "").split(/(\|\|?)|(?=\[)/).filter(Boolean)) {
+      if (part[0] === "|") {
+        const bar = document.createElement("span");
+        bar.className = part === "||" ? "bar end" : "bar";
+        div.appendChild(bar);
+        continue;
+      }
+      const m = part.match(/^\[([^\]]+)\](.*)$/);
+      const seg = document.createElement("span");
+      seg.className = "seg";
+      // [@]는 코드 대신 각 줄이 어느 조의 코드인지 이름을 표시
+      const chordText = (steps, name) => !m ? "" : m[1] === "@" ? name : label(transpose(m[1], steps));
+      seg.innerHTML = KEYS.map(([cls, steps, name]) => `<i class="${cls}">${chordText(steps, name)}</i>`).join("") + "<span></span>";
+      seg.lastChild.textContent = m ? m[2] : part;
+      div.appendChild(seg);
+    }
+    stanza.appendChild(div);
+  }
+}
+
+// A4 한 장의 폭과 높이에 맞을 때까지 글자 크기를 줄임
+const page = document.querySelector(".page");
+const lineEls = [...document.querySelectorAll(".line")];
+for (let ly = 34; ly >= 14; ly -= 0.5) {
+  document.documentElement.style.setProperty("--ly", ly + "px");
+  document.documentElement.style.setProperty("--ch", (ly * 0.74).toFixed(1) + "px");
+  const tooWide = lineEls.some(l => l.scrollWidth > l.clientWidth);
+  if (!tooWide && page.scrollHeight <= page.clientHeight) break;
+}
+</script>
+</body>
+</html>
