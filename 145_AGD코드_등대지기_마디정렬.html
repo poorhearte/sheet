@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>등대지기 (A·G·D 코드, 마디 정렬)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { --ly: 22px; --ch: 16px; --a: #C00000; --g: #0057B8; --d: #1E7B34; --line: #555; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 6mm 6mm; overflow: hidden; }
+  .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+  h1 { font-size: 34px; margin: 0; }
+  h2 { margin: 0; }
+  /* 한 줄 = 같은 폭의 4마디 */
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 8px; }
+  .m { display: flex; min-width: 0; }
+  .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
+  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
+  .ch i.a { color: var(--a); }
+  .ch i.g { color: var(--g); }
+  .ch i.d { color: var(--d); }
+  /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
+  .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
+  .m > .part:first-child .ch::before { left: 0; }
+  .m.last > .part:last-child .ch::after { right: 0; }
+  .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
+  /* 가사: 글자 간격을 살짝 좁히고 외곽선을 더해 더 크고 진하게 */
+  .ly { display: flex; gap: 4px; padding: 6px 2px 0 4px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.04em; -webkit-text-stroke: 0.04em #000; }
+  .ly .next { margin-left: auto; text-align: right; }
+  /* 박자표: 마디선 바로 뒤에서 가로줄을 가운데에 두고 위아래로 숫자 표시 */
+  .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
+  .has-time .ch, .has-time .ly { padding-left: calc(var(--ch) * 0.85 + 12px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="title"><h1>등대지기</h1><h2>영국 민요 · 고은 작사</h2></div>
+  <div id="song"></div>
+</div>
+<script>
+// 한 줄에 4마디씩, 마디 폭은 모두 같게 표시 (여행을떠나요.png 형식)
+// [코드]는 그 위치부터 적용(A코드 기준), 마디 가운데의 [코드]는 마디 뒤쪽 절반에 표시
+// " / " 뒤의 가사는 다음 마디로 이어지는 못갖춘마디 가사라서 마디 끝(오른쪽)에 붙여 표시
+// [@]는 코드 대신 각 줄이 어느 조의 코드인지 이름을 표시 (첫 못갖춘마디)
+// 내용은 145_AGD코드_등대지기.html과 같음 (코드: 145_A코드_등대지기.png, 마디: 145_G코드_등대지기.png 기준)
+// 이어지는 마디에서 코드가 그대로면 여행을떠나요.png처럼 같은 코드를 다시 표시
+const TIME = "6/8";
+const measures = [
+  "[@] / 얼",
+  "[A]어붙은 달", "[D]그-림 [A]자 물", "[A]결 위에 차-", "[E]고- / 한",
+  "[A]겨울에 거", "[D]센-파 [A]도 모", "[A]으는 [E]작-은", "[A]섬- / 생",
+  "[E]각하라 저", "[A]등대를 지", "[D]키는 [A]사-람", "[E]의- / 거",
+  "[A]룩하고 아", "[D]름-다 [A]운 사", "[A]랑의 [E]마-음", "[A]을- / 바",
+  "[A]람소리 울", "[D]부-짖 [A]는 어", "[A]두운 바-다", "[E]에- / 깜",
+  "[A]박이며 지", "[D]새-우 [A]는 기", "[A]나긴 [E]밤-하", "[A]늘- / 생",
+  "[E]각하라 저", "[A]바다를 지", "[D]키는 [A]사-람", "[E]의- / 거",
+  "[A]룩하고 아", "[D]름-다 [A]운 사", "[A]랑의 [E]마-음", "[A]을-",
+];
+const rows = [];
+for (let i = 0; i < measures.length; i += 4) rows.push(measures.slice(i, i + 4));
+
+// A코드를 기준으로 반음 단위로 옮김 (A→G: -2, A→D: +5)
+const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
+function transpose(chord, steps) {
+  const m = chord.match(/^([A-G][#b]?)(.*)$/);
+  const root = FLAT[m[1]] || m[1];
+  return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
+}
+const KEYS = [["a", 0, "A코드"], ["g", -2, "G코드"], ["d", 5, "D코드"]];
+// 7코드는 괄호로 감싸서 표시, 예: (A7)
+const label = c => /7$/.test(c) ? `(${c})` : c;
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+const song = document.getElementById("song");
+rows.forEach((measures, r) => {
+  const row = document.createElement("div");
+  row.className = "row";
+  measures.forEach((text, i) => {
+    const m = document.createElement("div");
+    const isLastOfSong = r === rows.length - 1 && i === measures.length - 1;
+    m.className = "m" + (i === measures.length - 1 ? " last" : "") + (isLastOfSong ? " end" : "");
+    const parts = text.split(/(?=\[)/);
+    for (const part of parts) {
+      const [, chord, lyric] = part.match(/^\[([^\]]+)\]\s*(.*)$/);
+      const [here, next] = lyric.split(/\s*\/\s*/);
+      const p = document.createElement("div");
+      const first = r === 0 && i === 0;
+      p.className = "part" + (first ? " has-time" : "");
+      // 마디 가운데서 코드가 바뀌면, 가사가 한 줄에 들어가도록 가사 길이에 비례해 폭을 나눔
+      if (parts.length > 1) p.style.flex = `${lyric.length} 1 0`;
+      const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
+      const chordText = (steps, name) => chord === "@" ? name : label(transpose(chord, steps));
+      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps, name]) => `<i class="${cls}">${chordText(steps, name)}</i>`).join("")}</div>`
+        + `<div class="ly"><span>${esc(here)}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div>`;
+      m.appendChild(p);
+    }
+    row.appendChild(m);
+  });
+  song.appendChild(row);
+});
+
+// 가사가 줄바꿈 없이 마디 안에 들어가고, A4 한 장의 높이에 맞는 가장 큰 글자 크기를 찾음
+// 가사 크기는 마디 폭이, 코드 크기는 페이지 높이가 정하므로 둘을 따로 맞춤
+const page = document.querySelector(".page");
+const root = document.documentElement.style;
+const lyEls = [...document.querySelectorAll(".ly")];
+const chEls = [...document.querySelectorAll(".ch")];
+function fits(ly, ch) {
+  root.setProperty("--ly", ly + "px");
+  root.setProperty("--ch", ch.toFixed(1) + "px");
+  return chEls.every(c => c.scrollWidth <= c.clientWidth) && lyEls.every(l => l.scrollWidth <= l.clientWidth) && page.scrollHeight <= page.clientHeight;
+}
+search:
+for (let ly = 26; ly >= 9; ly -= 0.25) {
+  for (let ch = Math.min(26, ly * 1.4); ch >= ly * 0.8; ch -= 0.5) {
+    if (fits(ly, ch)) break search;
+  }
+}
+</script>
+</body>
+</html>

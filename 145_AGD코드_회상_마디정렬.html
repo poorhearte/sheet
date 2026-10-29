@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>회상 - 산울림 (A·G·D 코드, 마디 정렬)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { --ly: 22px; --ch: 16px; --a: #C00000; --g: #0057B8; --d: #1E7B34; --line: #555; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 6mm 6mm; overflow: hidden; }
+  .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+  h1 { font-size: 34px; margin: 0; }
+  h2 { margin: 0; }
+  /* 한 줄 = 같은 폭의 4마디 */
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 8px; }
+  .m { display: flex; min-width: 0; }
+  .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
+  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
+  .ch i.a { color: var(--a); }
+  .ch i.g { color: var(--g); }
+  .ch i.d { color: var(--d); }
+  /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
+  .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
+  .m > .part:first-child .ch::before { left: 0; }
+  .m.last > .part:last-child .ch::after { right: 0; }
+  .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
+  /* 가사: 글자 간격을 살짝 좁히고 외곽선을 더해 더 크고 진하게 */
+  .ly { display: flex; gap: 4px; padding: 6px 2px 0 4px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.04em; -webkit-text-stroke: 0.04em #000; }
+  .ly .next { margin-left: auto; text-align: right; }
+  /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
+  .ly { height: calc(var(--ly) * 1.15 * var(--sy, 1)); }
+  .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
+  /* 박자표: 마디선 바로 뒤에서 가로줄을 가운데에 두고 위아래로 숫자 표시 */
+  .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
+  .has-time .ch, .has-time .ly { padding-left: calc(var(--ch) * 0.85 + 12px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="title"><h1>회상</h1><h2>산울림8집(1982)</h2></div>
+  <div id="song"></div>
+</div>
+<script>
+// 한 줄에 4마디씩, 마디 폭은 모두 같게 표시 (여행을떠나요.png 형식)
+// [코드]는 그 위치부터 적용(A코드 기준), 마디 가운데의 [코드]는 마디 뒤쪽 절반에 표시
+// " / " 뒤의 가사는 다음 마디로 이어지는 못갖춘마디 가사라서 마디 끝(오른쪽)에 붙여 표시
+// [@]는 코드 대신 각 줄이 어느 조의 코드인지 이름을 표시 (첫 못갖춘마디)
+// 마디와 코드 위치는 145_D코드_회상.png 악보 기준 (D→A, G→D, A7→E7로 옮김)
+const measures = [
+  "[@] / 길을 걸었",
+  "[A]지 누군가 옆에 있다", "[D]고 느꼈을 때-", "[A]- 나는 알아버렸", "[E7]네 / 이미 그대 떠난",
+  "[A]후라는 걸- 나는 혼자 걷고", "[D]있던 거지-", "[A]갑자기 바 [E7]람이 차가워 지-", "[A]네 / 마음은 얼",
+  "[A]고 나는 그 곳에 서", "[D]서 조금도-", "[A]- 움직일 수 없었", "[E7]지 / 마치 얼어버린",
+  "[A]사람처럼- 나는 놀라서 있", "[D]던- 거지-", "[A]달빛이- [E7]숨어 흐느끼고", "[A]있네-",
+  "[D]음- 떠나버린", "[A]그 사람-", "[D]음- 생각나네", "[A]-",
+  "[D]음- 돌아선", "[A]그 사람-", "[D]음- 생각나네", "[E7]- / 묻지 않았",
+  "[A]지 왜 나를 떠나느냐", "[D]고 하지만", "[A]- 마음 너무 아팠", "[E7]네 / 이미 그대 돌아",
+  "[A]서 있는 걸- 혼자 어쩔 수", "[D]없었지-", "[A]미운 건-", "[E7]오히려 나였어",
+  "[A]-",
+];
+const rows = [];
+for (let i = 0; i < measures.length; i += 4) rows.push(measures.slice(i, i + 4));
+
+// A코드를 기준으로 반음 단위로 옮김 (A→G: -2, A→D: +5)
+const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
+function transpose(chord, steps) {
+  const m = chord.match(/^([A-G][#b]?)(.*)$/);
+  const root = FLAT[m[1]] || m[1];
+  return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
+}
+const KEYS = [["a", 0, "A코드"], ["g", -2, "G코드"], ["d", 5, "D코드"]];
+// 7코드는 괄호로 감싸서 표시, 예: (A7)
+const label = c => /7$/.test(c) ? `(${c})` : c;
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+const song = document.getElementById("song");
+rows.forEach((measures, r) => {
+  const row = document.createElement("div");
+  row.className = "row";
+  measures.forEach((text, i) => {
+    const m = document.createElement("div");
+    const isLastOfSong = r === rows.length - 1 && i === measures.length - 1;
+    m.className = "m" + (i === measures.length - 1 ? " last" : "") + (isLastOfSong ? " end" : "");
+    const parts = text.split(/(?=\[)/);
+    for (const part of parts) {
+      const [, chord, lyric] = part.match(/^\[([^\]]+)\]\s*(.*)$/);
+      const [here, next] = lyric.split(/\s*\/\s*/);
+      const p = document.createElement("div");
+      const first = r === 0 && i === 0;
+      p.className = "part" + (first ? " has-time" : "");
+      // 마디 가운데서 코드가 바뀌면, 가사가 한 줄에 들어가도록 가사 길이에 비례해 폭을 나눔
+      if (parts.length > 1) p.style.flex = `${lyric.length} 1 0`;
+      const time = first ? `<span class="time">4<br>4</span>` : "";
+      const chordText = (steps, name) => chord === "@" ? name : label(transpose(chord, steps));
+      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps, name]) => `<i class="${cls}">${chordText(steps, name)}</i>`).join("")}</div>`
+        + `<div class="ly"><span>${esc(here)}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div>`;
+      m.appendChild(p);
+    }
+    row.appendChild(m);
+  });
+  song.appendChild(row);
+});
+
+// 가사가 줄바꿈 없이 마디 안에 들어가고, A4 한 장의 높이에 맞는 가장 큰 글자 크기를 찾음
+// 가사 크기는 마디 폭이, 코드 크기는 페이지 높이가 정하므로 둘을 따로 맞춤
+const page = document.querySelector(".page");
+const root = document.documentElement.style;
+const lyEls = [...document.querySelectorAll(".ly")];
+const chEls = [...document.querySelectorAll(".ch")];
+function fits(ly, ch) {
+  root.setProperty("--ly", ly + "px");
+  root.setProperty("--ch", ch.toFixed(1) + "px");
+  return chEls.every(c => c.scrollWidth <= c.clientWidth) && lyEls.every(l => l.scrollWidth <= l.clientWidth) && page.scrollHeight <= page.clientHeight;
+}
+// 1) 가사 폭이 마디에 들어가는 가장 큰 글자 크기
+let best = 9;
+for (let ly = 26; ly >= 9; ly -= 0.25) {
+  if (fits(ly, ly * 0.8)) { best = ly; break; }
+}
+// 2) 남는 세로 공간으로 가사를 세로로 늘림(최대 1.7배), 그다음 코드를 가능한 크게
+search:
+for (let sy = 1.7; sy >= 1; sy -= 0.05) {
+  root.setProperty("--sy", sy.toFixed(2));
+  for (let ch = Math.min(26, best * 1.4); ch >= best * 1.1; ch -= 0.5) {
+    if (fits(best, ch)) break search;
+  }
+}
+</script>
+</body>
+</html>
