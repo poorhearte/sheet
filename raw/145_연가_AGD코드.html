@@ -2,14 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>회상 - 산울림 (A·G·D 코드, 마디 정렬)</title>
+<title>연가 (A·G·D 코드, 마디 정렬)</title>
 <style>
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   :root { --ly: 22px; --ch: 16px; --a: #C00000; --g: #0057B8; --d: #1E7B34; --line: #555; }
-  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI Symbol", sans-serif; }
   .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 6mm 6mm; overflow: hidden; }
-  .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+  .title { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+  /* 첫 마디가 쉼표로 시작해 코드 안내를 넣을 빈 마디가 없으므로 제목 왼쪽 위에 표시 */
+  .legend { position: absolute; left: 0; top: 0; font-size: 15px; font-weight: 800; line-height: 1.15; }
   h1 { font-size: 34px; margin: 0; }
   h2 { margin: 0; }
   /* 한 줄 = 같은 폭의 4마디 */
@@ -21,49 +23,52 @@
   .ch i.a { color: var(--a); }
   .ch i.g { color: var(--g); }
   .ch i.d { color: var(--d); }
+  /* 코드 번호(도수): 코드 오른쪽에 조금 작게, 진한 회색 */
+  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
   .m.last > .part:last-child .ch::after { right: 0; }
   .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
   /* 가사: 글자 간격을 살짝 좁히고 외곽선을 더해 더 크고 진하게 */
-  .ly { display: flex; gap: 4px; padding: 6px 2px 0 4px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.04em; -webkit-text-stroke: 0.04em #000; }
+  .ly { display: flex; gap: 4px; padding: 6px 2px 0 4px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.04em; }
   .ly .next { margin-left: auto; text-align: right; }
   /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
   .ly { height: calc(var(--ly) * 1.15 * var(--sy, 1)); }
   .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
   /* 박자표: 마디선 바로 뒤에서 가로줄을 가운데에 두고 위아래로 숫자 표시 */
   .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
-  .has-time .ch, .has-time .ly { padding-left: calc(var(--ch) * 0.85 + 12px); }
+  .has-time .ch { padding-left: calc(var(--ch) * 0.85 + 12px); }
+  /* 가사 쪽 박자표 자리는 가사 크기 기준 (코드를 키워도 첫 가사가 밀리지 않게) */
+  .has-time .ly { padding-left: calc(var(--ly) * 0.7 + 12px); }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="title"><h1>회상</h1><h2>산울림8집(1982)</h2></div>
+  <div class="title"><div class="legend"></div><h1>연가</h1><h2>뉴질랜드 민요</h2></div>
   <div id="song"></div>
 </div>
 <script>
 // 한 줄에 4마디씩, 마디 폭은 모두 같게 표시 (여행을떠나요.png 형식)
 // [코드]는 그 위치부터 적용(A코드 기준), 마디 가운데의 [코드]는 마디 뒤쪽 절반에 표시
 // " / " 뒤의 가사는 다음 마디로 이어지는 못갖춘마디 가사라서 마디 끝(오른쪽)에 붙여 표시
-// [@]는 코드 대신 각 줄이 어느 조의 코드인지 이름을 표시 (첫 못갖춘마디)
-// 마디와 코드 위치는 145_D코드_회상.png 악보 기준 (D→A, G→D, A7→E7로 옮김)
+// 𝄽 는 4분쉼표
+// 내용은 145_AGD코드_연가.html과 같음 (코드와 마디는 145_G코드_연가.png 기준, 코드 하나가 한 마디)
+const TIME = "4/4";
 const measures = [
-  "[@] / 길을 걸었",
-  "[A]지 누군가 옆에 있다", "[D]고 느꼈을 때-", "[A]- 나는 알아버렸", "[E7]네 / 이미 그대 떠난",
-  "[A]후라는 걸- 나는 혼자 걷고", "[D]있던 거지-", "[A]갑자기 바 [E7]람이 차가워 지-", "[A]네 / 마음은 얼",
-  "[A]고 나는 그 곳에 서", "[D]서 조금도-", "[A]- 움직일 수 없었", "[E7]지 / 마치 얼어버린",
-  "[A]사람처럼- 나는 놀라서 있", "[D]던- 거지-", "[A]달빛이- [E7]숨어 흐느끼고", "[A]있네-",
-  "[D]음- 떠나버린", "[A]그 사람-", "[D]음- 생각나네", "[A]-",
-  "[D]음- 돌아선", "[A]그 사람-", "[D]음- 생각나네", "[E7]- / 묻지 않았",
-  "[A]지 왜 나를 떠나느냐", "[D]고 하지만", "[A]- 마음 너무 아팠", "[E7]네 / 이미 그대 돌아",
-  "[A]서 있는 걸- 혼자 어쩔 수", "[D]없었지-", "[A]미운 건-", "[E7]오히려 나였어",
-  "[A]-",
+  "[G]𝄽 비바람이 치던", "[G]바다", "[G]𝄽 잔잔해져", "[C]오면",
+  "[C]𝄽 오늘 그대 오시", "[D7]려나", "[D7]𝄽 저 바다 건너", "[G]서",
+  "[G]𝄽 저 하늘에 반짝", "[G]이는", "[G]𝄽 별빛도 아름답", "[C]지만",
+  "[C]𝄽 사랑스런 그대", "[D7]눈은", "[D7]𝄽 더욱 아름다워", "[G]라",
+  "[G]𝄽 그대만", "[C]을", "[C]𝄽 기다리", "[G]리",
+  "[G]𝄽 내 사랑", "[D7]영원히", "[D7]𝄽 기다리", "[G]리",
+  "[G]𝄽 그대만", "[C]을", "[C]𝄽 기다리", "[G]리",
+  "[G]𝄽 내 사랑", "[D7]영원히", "[D7]𝄽 기다리", "[G]리",
 ];
 const rows = [];
 for (let i = 0; i < measures.length; i += 4) rows.push(measures.slice(i, i + 4));
 
-// A코드를 기준으로 반음 단위로 옮김 (A→G: -2, A→D: +5)
+// G코드를 기준으로 반음 단위로 옮김 (G→A: +2, G→D: -5)
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
 function transpose(chord, steps) {
@@ -71,10 +76,19 @@ function transpose(chord, steps) {
   const root = FLAT[m[1]] || m[1];
   return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
 }
-const KEYS = [["a", 0, "A코드"], ["g", -2, "G코드"], ["d", 5, "D코드"]];
-// 7코드는 괄호로 감싸서 표시, 예: (A7)
-const label = c => /7$/.test(c) ? `(${c})` : c;
+const KEYS = [["a", 2, "A코드"], ["g", 0, "G코드"], ["d", -5, "D코드"]];
+// 가장 아래 코드 줄(D코드)에만 코드 번호(도수)를 오른쪽에 붙임: D=1, G=4, A=5
+const DEGREE_KEY = "d", DEGREE_ROOT = "D";
+const DEGREES = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
+function degree(chord) {
+  const r = chord.match(/^[A-G][#b]?/)[0];
+  return DEGREES[(NOTES.indexOf(FLAT[r] || r) - NOTES.indexOf(DEGREE_ROOT) + 12) % 12] || "";
+}
+// 7코드는 7을 빼고 기본 코드로 표시, 예: E7 → E
+const label = c => c.replace(/7$/, "");
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+document.querySelector(".legend").innerHTML = KEYS.map(([cls, , name]) => `<div style="color:var(--${cls})">${name}</div>`).join("");
 
 const song = document.getElementById("song");
 rows.forEach((measures, r) => {
@@ -93,9 +107,13 @@ rows.forEach((measures, r) => {
       p.className = "part" + (first ? " has-time" : "");
       // 마디 가운데서 코드가 바뀌면, 가사가 한 줄에 들어가도록 가사 길이에 비례해 폭을 나눔
       if (parts.length > 1) p.style.flex = `${lyric.length} 1 0`;
-      const time = first ? `<span class="time">4<br>4</span>` : "";
-      const chordText = (steps, name) => chord === "@" ? name : label(transpose(chord, steps));
-      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps, name]) => `<i class="${cls}">${chordText(steps, name)}</i>`).join("")}</div>`
+      const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
+      const chordText = (steps, name, cls) => {
+        if (chord === "@") return name;
+        const c = transpose(chord, steps);
+        return label(c) + (cls === DEGREE_KEY ? `<span class="deg">${degree(c)}</span>` : "");
+      };
+      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps, name]) => `<i class="${cls}">${chordText(steps, name, cls)}</i>`).join("")}</div>`
         + `<div class="ly"><span>${esc(here)}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div>`;
       m.appendChild(p);
     }
@@ -117,16 +135,14 @@ function fits(ly, ch) {
 }
 // 1) 가사 폭이 마디에 들어가는 가장 큰 글자 크기
 let best = 9;
-for (let ly = 26; ly >= 9; ly -= 0.25) {
+for (let ly = 40; ly >= 9; ly -= 0.25) {
   if (fits(ly, ly * 0.8)) { best = ly; break; }
 }
-// 2) 남는 세로 공간으로 가사를 세로로 늘림(최대 1.7배), 그다음 코드를 가능한 크게
-search:
-for (let sy = 1.7; sy >= 1; sy -= 0.05) {
+// 2) 남는 세로 공간을 가사 세로 늘림과 코드 크기에 함께 나눔
+//    코드 글자 크기를 늘어난 가사 높이에 비례하게 맞춰, 둘이 비슷한 크기로 보이게 함
+for (let sy = 1.7; sy >= 1; sy -= 0.02) {
   root.setProperty("--sy", sy.toFixed(2));
-  for (let ch = Math.min(26, best * 1.4); ch >= best * 1.1; ch -= 0.5) {
-    if (fits(best, ch)) break search;
-  }
+  if (fits(best, best * sy * 0.85)) break;
 }
 </script>
 </body>

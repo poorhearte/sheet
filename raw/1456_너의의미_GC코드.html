@@ -6,7 +6,7 @@
 <style>
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  :root { --ly: 22px; --ch: 16px; --g: #0057B8; --c: #7A2FA8; --line: #555; }
+  :root { --ly: 22px; --ch: 16px; --g: #C00000; --c: #0057B8; --line: #555; }
   html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
   .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 4mm 6mm; overflow: hidden; }
   .title { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 14px; }
@@ -22,13 +22,15 @@
   .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
   .ch i.g { color: var(--g); }
   .ch i.c { color: var(--c); }
+  /* 코드 번호(도수): 코드 오른쪽에 같은 크기, 진한 회색 */
+  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
   .m.last > .part:last-child .ch::after { right: 0; }
   .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
   /* 가사: 글자 간격을 살짝 좁히고 외곽선을 더해 더 크고 진하게 */
-  .ly { display: flex; gap: 3px; padding: 6px 1px 0 3px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.06em; word-spacing: -0.1em; -webkit-text-stroke: 0.05em #000; }
+  .ly { display: flex; gap: 3px; padding: 6px 1px 0 3px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.06em; word-spacing: -0.1em; }
   .ly .next { margin-left: auto; text-align: right; }
   /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
   .ly { height: calc(var(--ly) * 1.15 * var(--sy, 1)); }
@@ -46,7 +48,7 @@
 </head>
 <body>
 <div class="page">
-  <div class="title"><div class="legend"></div><h1>너의 의미</h1><h2>아이유</h2></div>
+  <div class="title"><div class="legend"></div><h1>너의 의미</h1><h2>산울림, 아이유</h2></div>
   <div id="song"></div>
   <div class="note"><b>D.C.</b>까지 연주 후 처음으로 돌아가서 <b>Fine</b>까지 연주하고 끝낸다.</div>
 </div>
@@ -80,8 +82,19 @@ function transpose(chord, steps) {
   return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
 }
 const KEYS = [["g", 7, "G코드"], ["c", 0, "C코드"]];
-// 7코드는 괄호로 감싸서 표시, 예: (G7)
-const label = c => /7$/.test(c) ? `(${c})` : c;
+// 7코드는 7을 빼고 기본 코드로 표시, 예: G7 → G
+const label = c => c.replace(/7$/, "");
+// 가장 아래 코드 줄(C코드)에만 코드 번호(도수)를 오른쪽에 붙임: C=1, F=4, G=5, Am=6
+const DEGREE_KEY = "c", DEGREE_ROOT = "C";
+const DEGREES = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
+function degree(chord) {
+  const r = chord.match(/^[A-G][#b]?/)[0];
+  return DEGREES[(NOTES.indexOf(FLAT[r] || r) - NOTES.indexOf(DEGREE_ROOT) + 12) % 12] || "";
+}
+const chordText = (chord, steps, cls) => {
+  const c = transpose(chord, steps);
+  return label(c) + (cls === DEGREE_KEY ? `<span class="deg">${degree(c)}</span>` : "");
+};
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 document.querySelector(".legend").innerHTML = KEYS.map(([cls, , name]) => `<div style="color:var(--${cls})">${name}</div>`).join("");
@@ -106,7 +119,7 @@ rows.forEach((measures, r) => {
       // (실제 가사 폭만큼 먼저 차지하고 남는 공간을 나눠 가짐)
       if (parts.length > 1) p.style.flex = "1 1 auto";
       const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
-      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps]) => `<i class="${cls}">${label(transpose(chord, steps))}</i>`).join("")}</div>`
+      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps]) => `<i class="${cls}">${chordText(chord, steps, cls)}</i>`).join("")}</div>`
         + `<div class="ly"><span>${esc(here)}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div>`;
       m.appendChild(p);
     });
@@ -134,8 +147,8 @@ for (let ly = 44; ly >= 9; ly -= 0.25) {
   }
 }
 
-// 가로 폭은 위에서 정한 크기 그대로 두고, 페이지 높이에 맞는 만큼 가사를 세로로 늘림 (최대 1.7배)
-for (let sy = 1.7; sy > 1; sy -= 0.05) {
+// 가로 폭은 위에서 정한 크기 그대로 두고, 페이지 높이에 맞는 만큼 가사를 세로로 최대한 늘림 (최대 3배)
+for (let sy = 3; sy > 1; sy -= 0.05) {
   root.setProperty("--sy", sy.toFixed(2));
   if (page.scrollHeight <= page.clientHeight) break;
 }
