@@ -2,20 +2,18 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>연가 (A·G·D 코드, 마디 정렬)</title>
+<title>등대지기 (A·G·D 코드, 마디 정렬, 1·2절 같이)</title>
 <style>
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   :root { --ly: 22px; --ch: 16px; --a: #C00000; --g: #0057B8; --d: #1E7B34; --line: #555; }
-  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", "Segoe UI Symbol", sans-serif; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
   .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 6mm 6mm; overflow: hidden; }
-  .title { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
-  /* 첫 마디가 쉼표로 시작해 코드 안내를 넣을 빈 마디가 없으므로 제목 왼쪽 위에 표시 */
-  .legend { position: absolute; left: 0; top: 0; font-size: 15px; font-weight: 800; line-height: 1.15; }
+  .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
   h1 { font-size: 34px; margin: 0; }
   h2 { margin: 0; }
   /* 한 줄 = 같은 폭의 4마디 */
-  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 8px; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 14px; }
   .m { display: flex; min-width: 0; }
   .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
@@ -23,52 +21,58 @@
   .ch i.a { color: var(--a); }
   .ch i.g { color: var(--g); }
   .ch i.d { color: var(--d); }
-  /* 코드 번호(도수): 코드 오른쪽에 조금 작게, 진한 회색 */
+  /* 코드 번호(도수): 코드 오른쪽에 조금 작게 */
   .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
   .m.last > .part:last-child .ch::after { right: 0; }
   .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
-  /* 가사: 글자 간격을 살짝 좁히고 외곽선을 더해 더 크고 진하게 */
-  .ly { display: flex; gap: 4px; padding: 6px 2px 0 4px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.04em; }
+  /* 가사: 1절과 2절을 위아래 두 줄로, 글자 간격을 살짝 좁히고 외곽선을 더해 크고 진하게 */
+  .lys { padding: 6px 2px 0 4px; }
+  .ly { display: flex; gap: 4px; font-size: var(--ly); font-weight: bold; line-height: 1.2; white-space: nowrap; letter-spacing: -0.04em; }
   .ly .next { margin-left: auto; text-align: right; }
   /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
-  .ly { height: calc(var(--ly) * 1.15 * var(--sy, 1)); }
+  .ly { height: calc(var(--ly) * 1.2 * var(--sy, 1)); }
   .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
+  /* 6/8박자의 강박(1박)·중강박(4박) 가사: 글자 뒤에 연한 V 표시 */
+  .ly em { position: relative; font-style: normal; }
+  .ly em::before { content: "V"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: -1;
+    font-family: Arial, sans-serif; font-size: 1.25em; font-weight: 900; color: #FFEB3B; letter-spacing: 0; }
+  .lys { position: relative; z-index: 0; }
+  /* 가사가 없는 4박 자리("-")도 V가 보이도록 글자 한 칸 폭을 줌 */
+  .ly em.beat { display: inline-block; min-width: 1em; text-align: center; }
   /* 박자표: 마디선 바로 뒤에서 가로줄을 가운데에 두고 위아래로 숫자 표시 */
   .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
   .has-time .ch { padding-left: calc(var(--ch) * 0.85 + 12px); }
   /* 가사 쪽 박자표 자리는 가사 크기 기준 (코드를 키워도 첫 가사가 밀리지 않게) */
-  .has-time .ly { padding-left: calc(var(--ly) * 0.7 + 12px); }
+  .has-time .lys { padding-left: calc(var(--ly) * 0.7 + 12px); }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="title"><div class="legend"></div><h1>연가</h1><h2>뉴질랜드 민요</h2></div>
+  <div class="title"><h1>등대지기</h1><h2>영국 민요 · 고은 작사</h2></div>
   <div id="song"></div>
 </div>
 <script>
 // 한 줄에 4마디씩, 마디 폭은 모두 같게 표시 (여행을떠나요.png 형식)
-// [코드]는 그 위치부터 적용(A코드 기준), 마디 가운데의 [코드]는 마디 뒤쪽 절반에 표시
+// 1절과 2절은 코드가 같으므로 코드는 한 번만 쓰고, 가사는 "1절 | 2절"로 위아래 두 줄에 표시
+// [코드]는 그 위치부터 적용(A코드 기준), 마디 가운데의 [코드]는 가사 길이에 맞춰 마디 뒤쪽에 표시
 // " / " 뒤의 가사는 다음 마디로 이어지는 못갖춘마디 가사라서 마디 끝(오른쪽)에 붙여 표시
-// 𝄽 는 4분쉼표
-// 내용은 145_AGD코드_연가.html과 같음 (코드와 마디는 145_G코드_연가.png 기준, 코드 하나가 한 마디)
-const TIME = "4/4";
+// [@]는 코드 대신 각 줄이 어느 조의 코드인지 이름을 표시 (첫 못갖춘마디)
+// 코드는 145_A코드_등대지기.png, 마디는 145_G코드_등대지기.png 기준
+const TIME = "6/8";
 const measures = [
-  "[G]𝄽 비바람이 치던", "[G]바다", "[G]𝄽 잔잔해져", "[C]오면",
-  "[C]𝄽 오늘 그대 오시", "[D7]려나", "[D7]𝄽 저 바다 건너", "[G]서",
-  "[G]𝄽 저 하늘에 반짝", "[G]이는", "[G]𝄽 별빛도 아름답", "[C]지만",
-  "[C]𝄽 사랑스런 그대", "[D7]눈은", "[D7]𝄽 더욱 아름다워", "[G]라",
-  "[G]𝄽 그대만", "[C]을", "[C]𝄽 기다리", "[G]리",
-  "[G]𝄽 내 사랑", "[D7]영원히", "[D7]𝄽 기다리", "[G]리",
-  "[G]𝄽 그대만", "[C]을", "[C]𝄽 기다리", "[G]리",
-  "[G]𝄽 내 사랑", "[D7]영원히", "[D7]𝄽 기다리", "[G]리",
+  "[@] / 얼 | / 바",
+  "[A]어붙은 달 | 람소리 울", "[D]그-림 | 부-짖 [A]자 물 | 는 어", "[A]결 위에 차- | 두운 바-다", "[E]고- / 한 | 에- / 깜",
+  "[A]겨울에 거 | 박이며 지", "[D]센-파 | 새-우 [A]도 모 | 는 기", "[A]으는 | 나긴 [E]작-은 | 밤-하", "[A]섬- / 생 | 늘- / 생",
+  "[E]각하라 저 | 각하라 저", "[A]등대를 지 | 바다를 지", "[D]키는 | 키는 [A]사-람 | 사-람", "[E]의- / 거 | 의- / 거",
+  "[A]룩하고 아 | 룩하고 아", "[D]름-다 | 름-다 [A]운 사 | 운 사", "[A]랑의 | 랑의 [E]마-음 | 마-음", "[A]을- | 을-",
 ];
 const rows = [];
 for (let i = 0; i < measures.length; i += 4) rows.push(measures.slice(i, i + 4));
 
-// G코드를 기준으로 반음 단위로 옮김 (G→A: +2, G→D: -5)
+// A코드를 기준으로 반음 단위로 옮김 (A→G: -2, A→D: +5)
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
 function transpose(chord, steps) {
@@ -76,7 +80,8 @@ function transpose(chord, steps) {
   const root = FLAT[m[1]] || m[1];
   return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
 }
-const KEYS = [["a", 2, "A코드"], ["g", 0, "G코드"], ["d", -5, "D코드"]];
+// 코드 줄 순서: 위에서부터 D·G·A
+const KEYS = [["d", 5, "D장조: D G A"], ["g", -2, "G장조: G C D"], ["a", 0, "A장조: A D E"]];
 // 가장 아래 코드 줄(D코드)에만 코드 번호(도수)를 오른쪽에 붙임: D=1, G=4, A=5
 const DEGREE_KEY = "d", DEGREE_ROOT = "D";
 const DEGREES = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
@@ -84,11 +89,9 @@ function degree(chord) {
   const r = chord.match(/^[A-G][#b]?/)[0];
   return DEGREES[(NOTES.indexOf(FLAT[r] || r) - NOTES.indexOf(DEGREE_ROOT) + 12) % 12] || "";
 }
-// 7코드는 7을 빼고 기본 코드로 표시, 예: E7 → E
-const label = c => c.replace(/7$/, "");
+// 7코드는 괄호로 감싸서 표시, 예: (A7)
+const label = c => /7$/.test(c) ? `(${c})` : c;
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-
-document.querySelector(".legend").innerHTML = KEYS.map(([cls, , name]) => `<div style="color:var(--${cls})">${name}</div>`).join("");
 
 const song = document.getElementById("song");
 rows.forEach((measures, r) => {
@@ -98,23 +101,54 @@ rows.forEach((measures, r) => {
     const m = document.createElement("div");
     const isLastOfSong = r === rows.length - 1 && i === measures.length - 1;
     m.className = "m" + (i === measures.length - 1 ? " last" : "") + (isLastOfSong ? " end" : "");
-    const parts = text.split(/(?=\[)/);
+    let parts = text.split(/(?=\[)/);
+    // 6/8박자(V v v V v v): 한 마디를 1박·4박 기준으로 같은 폭의 두 칸으로 나눔 (|V  V  |)
+    // 코드가 마디 가운데서 바뀌는 마디는 이미 두 칸이고, 코드가 하나인 마디는 가사를 반으로 나눠 두 칸으로 만듦
+    // (♩♪♩♪ 리듬이라 1·2번째 글자가 앞 칸, 3번째 글자부터 뒤 칸. "고-"처럼 글자가 하나면 "-"가 뒤 칸)
+    if (parts.length === 1 && !parts[0].startsWith("[@]")) {
+      const [, chord, lyric] = parts[0].match(/^\[([^\]]*)\]\s*(.*)$/);
+      const halves = lyric.split("|").map(v => {
+        const [here, next] = v.trim().split(/\s*\/\s*/);
+        const idx = [...here].map((c, k) => /[가-힣]/.test(c) ? k : -1).filter(k => k >= 0);
+        const cut = (idx.length <= 2 ? idx[0] : idx[1]) + 1;
+        const a = [...here].slice(0, cut).join("").trim(), b = [...here].slice(cut).join("").trim();
+        return [a, b + (next ? ` / ${next}` : "")];
+      });
+      parts = [`[${chord}]${halves.map(h => h[0]).join(" | ")}`, `[]${halves.map(h => h[1]).join(" | ")}`];
+    }
+    // 두 칸 각각의 첫 글자(1박·4박)에 V 표시. 칸에 글자가 없으면 음을 끄는 "-" 자리에 표시
+    // (다음 마디로 이어지는 " / " 뒤 가사는 제외)
+    const markAccents = s => {
+      let done = false;
+      const hasSyl = /[가-힣]/.test(s);
+      return [...s].map(c => {
+        if (!done && (hasSyl ? /[가-힣]/.test(c) : c === "-")) { done = true; return `<em${hasSyl ? "" : ' class="beat"'}>${c}</em>`; }
+        return esc(c);
+      }).join("");
+    };
     for (const part of parts) {
-      const [, chord, lyric] = part.match(/^\[([^\]]+)\]\s*(.*)$/);
-      const [here, next] = lyric.split(/\s*\/\s*/);
+      const [, chord, lyric] = part.match(/^\[([^\]]*)\]\s*(.*)$/);
+      const verses = lyric.split("|").map(v => v.trim());
       const p = document.createElement("div");
       const first = r === 0 && i === 0;
       p.className = "part" + (first ? " has-time" : "");
-      // 마디 가운데서 코드가 바뀌면, 가사가 한 줄에 들어가도록 가사 길이에 비례해 폭을 나눔
-      if (parts.length > 1) p.style.flex = `${lyric.length} 1 0`;
+      // 두 칸은 박자(1박·4박)에 맞게 같은 폭
+      if (parts.length > 1) p.style.flex = "1 1 0";
       const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
       const chordText = (steps, name, cls) => {
-        if (chord === "@") return name;
+        // 첫 못갖춘마디 칸의 조 안내는 줄바꿈 없이 조금 작게
+        if (chord === "@") return `<span style="white-space:nowrap;font-size:0.8em">${name}</span>`;
+        if (chord === "") return "";
         const c = transpose(chord, steps);
         return label(c) + (cls === DEGREE_KEY ? `<span class="deg">${degree(c)}</span>` : "");
       };
+      const lines = verses.map((v, vi) => {
+        const [here, next] = v.split(/\s*\/\s*/);
+        const body = chord === "@" ? esc(here) : markAccents(here);
+        return `<div class="ly"><span>${body}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div>`;
+      }).join("");
       p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps, name]) => `<i class="${cls}">${chordText(steps, name, cls)}</i>`).join("")}</div>`
-        + `<div class="ly"><span>${esc(here)}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div>`;
+        + `<div class="lys">${lines}</div>`;
       m.appendChild(p);
     }
     row.appendChild(m);
@@ -135,15 +169,18 @@ function fits(ly, ch) {
 }
 // 1) 가사 폭이 마디에 들어가는 가장 큰 글자 크기
 let best = 9;
-for (let ly = 40; ly >= 9; ly -= 0.25) {
+for (let ly = 44; ly >= 9; ly -= 0.25) {
   if (fits(ly, ly * 0.8)) { best = ly; break; }
 }
+// 마디 안에서 가사끼리 붙어 보이지 않게 폭에 여유를 둠
+best = Math.floor(best * 0.9 * 4) / 4;
 // 2) 남는 세로 공간을 가사 세로 늘림과 코드 크기에 함께 나눔
 //    코드 글자 크기를 늘어난 가사 높이에 비례하게 맞춰, 둘이 비슷한 크기로 보이게 함
 for (let sy = 1.7; sy >= 1; sy -= 0.02) {
   root.setProperty("--sy", sy.toFixed(2));
   if (fits(best, best * sy * 0.85)) break;
 }
+
 </script>
 </body>
 </html>
