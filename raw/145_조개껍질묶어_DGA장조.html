@@ -19,7 +19,7 @@
   .m { display: flex; min-width: 0; }
   .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
-  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
+  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; white-space: nowrap; position: relative; z-index: 1; }
   .ch i.a { color: var(--a); }
   .ch i.g { color: var(--g); }
   .ch i.d { color: var(--d); }
@@ -46,7 +46,8 @@
   .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
   /* 박자표: 마디선 바로 뒤에서 가로줄을 가운데에 두고 위아래로 숫자 표시 */
   .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
-  .has-time .ch { padding-left: calc(var(--ch) * 0.85 + 12px); }
+  /* 박자표 칸은 가사 크기 기준으로 비켜 줌 (코드를 키워도 첫 칸이 넘치지 않게) */
+  .has-time .ch { padding-left: calc(var(--ly) * 0.7 + 12px); }
   /* 가사 쪽 박자표 자리는 가사 크기 기준 */
   .has-time .lys { padding-left: calc(var(--ly) * 0.7 + 12px); }
 </style>
@@ -164,15 +165,27 @@ function fits(ly, ch) {
   root.setProperty("--ch", ch.toFixed(1) + "px");
   return chEls.every(c => c.scrollWidth <= c.clientWidth) && lyEls.every(l => l.scrollWidth <= l.clientWidth) && page.scrollHeight <= page.clientHeight;
 }
-// 코드가 가사보다 작아지지 않게 코드 크기를 가사의 1.1배로 묶어서 찾음
+// 1) 가사 폭이 마디에 들어가는 가장 큰 글자 크기
+let best = 9;
 for (let ly = 30; ly >= 9; ly -= 0.25) {
-  if (fits(ly, ly * 1.1)) break;
+  if (fits(ly, ly * 1.1)) { best = ly; break; }
 }
-// 가로 폭과 코드 크기는 그대로 두고, 페이지 높이에 맞는 만큼 가사를 세로로 늘림 (최대 3배)
-for (let sy = 3; sy > 1; sy -= 0.05) {
+// 2) 남는 세로 공간을 가사 세로 늘림과 코드 크기에 함께 나눔
+//    가사는 너무 길쭉하지 않게 최대 1.5배까지만 늘리고, 코드는 그만큼 크게(늘어난 가사 높이에 비례)
+//    (높이는 실제 악보 맨 아래 위치로 확인 – 세로로 늘린 글자가 scrollHeight를 부풀려 너무 작게 잡히는 문제 방지)
+const songEl = document.getElementById("song");
+const fitsH = () => songEl.getBoundingClientRect().bottom <= page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+for (let sy = 1.8; sy >= 1; sy -= 0.02) {
   root.setProperty("--sy", sy.toFixed(2));
-  if (page.scrollHeight <= page.clientHeight) break;
+  root.setProperty("--ch", (best * sy * 0.9).toFixed(1) + "px");
+  // 코드는 1박 칸에만 있고 옆 박 칸은 비어 있으므로, 코드 글자가 옆 칸으로 넘쳐도 괜찮음 (높이만 확인)
+  if (fitsH()) break;
 }
+// 3) 아래가 비면, 남는 높이를 줄 사이에 고르게 나눠 페이지를 채움
+const rowEls = [...document.querySelectorAll(".row")];
+const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+const free = pageBottom - document.getElementById("song").getBoundingClientRect().bottom - 4;
+if (free > 0) rowEls.forEach(r => r.style.marginBottom = `${parseFloat(getComputedStyle(r).marginBottom) + free / rowEls.length}px`);
 </script>
 </body>
 </html>
