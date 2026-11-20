@@ -12,6 +12,9 @@
   .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
   h1 { font-size: 34px; margin: 0; }
   h2 { margin: 0; }
+  /* 제목 오른쪽 정보: 가수·년도 / 원곡 조 를 두 줄로 */
+  .title { align-items: center; }
+  .info { font-size: 18px; font-weight: bold; line-height: 1.3; white-space: nowrap; }
   /* 한 줄 = 같은 폭의 4마디 */
   .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 8px; }
   .m { display: flex; min-width: 0; }
@@ -49,7 +52,7 @@
 </head>
 <body>
 <div class="page">
-  <div class="title"><h1>회상</h1><h2>산울림8집(1982)</h2></div>
+  <div class="title"><h1>회상</h1><div class="info"><div>산울림8집(1982)</div><div>원곡: D major (D장조) key</div></div></div>
   <div id="song"></div>
 </div>
 <script>
