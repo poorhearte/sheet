@@ -4,21 +4,24 @@
 <meta charset="utf-8">
 <title>조별 코드표 (행열 변환)</title>
 <style>
+  /* A4 세로 한 장에 맞춰 인쇄: 표가 페이지를 가득 채우고(세로로 길쭉하게) 글자를 칸 폭에 맞게 크게 */
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
-  .wrap { padding: 20px; display: inline-block; }
-  table { border-collapse: collapse; }
-  th, td { border: 1px solid #9aa3b5; text-align: center; vertical-align: middle; }
-  thead th { background: #e3f0dc; font-size: 15px; font-weight: bold; padding: 8px 6px; width: 118px; line-height: 1.4; }
-  thead th small { display: block; font-size: 12px; font-weight: normal; color: #333; }
-  thead th.corner { background: #fff; border-top-color: #fff; border-left-color: #fff; width: 90px; }
-  tbody th { background: #dfe5f5; font-size: 16px; padding: 8px 12px; line-height: 1.3; }
-  tbody th .sig { display: block; font-size: 14px; letter-spacing: 2px; }
-  td { font-size: 16px; height: 46px; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm; overflow: hidden; }
+  table { border-collapse: collapse; table-layout: fixed; width: 100%; height: 100%; }
+  th, td { border: 1.5px solid #9aa3b5; text-align: center; vertical-align: middle; }
+  thead th { background: #e3f0dc; font-size: 27px; font-weight: bold; padding: 6px 2px; line-height: 1.2; height: 19%; }
+  thead th small { display: block; font-size: 18px; font-weight: normal; color: #333; line-height: 1.25; margin-top: 6px; white-space: nowrap; letter-spacing: -0.04em; }
+  thead th.corner { background: #fff; border-top-color: #fff; border-left-color: #fff; width: 12%; }
+  tbody th { background: #dfe5f5; font-size: 21px; padding: 4px 2px; line-height: 1.2; }
+  tbody th .sig { display: block; font-size: 18px; letter-spacing: 2px; }
+  td { font-size: 27px; }
   tr.strong td { font-weight: bold; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page">
 <table>
   <thead id="head"></thead>
   <tbody id="body"></tbody>
@@ -47,8 +50,14 @@ const keys = [
 ];
 
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+// 칸이 좁으니 긴 이름은 두 줄로: 한글은 "화음" 앞에서, 영어는 띄어쓰기에서 줄바꿈
+const smallName = n => {
+  const [ko, en] = n.split("/");
+  const k = ko.length > 4 ? ko.replace(/화음$/, "<br>화음") : ko;
+  return k + "<br>" + esc(en).replace(/ /g, "<br>");
+};
 document.getElementById("head").innerHTML =
-  `<tr><th class="corner"></th>${degrees.map(([d, n]) => `<th>${d}<small>(${esc(n)})</small></th>`).join("")}</tr>`;
+  `<tr><th class="corner"></th>${degrees.map(([d, n]) => `<th>${d.replace(" ", "<br>")}<small>${smallName(n)}</small></th>`).join("")}</tr>`;
 document.getElementById("body").innerHTML = keys.map(([k, sig, chords, strong]) =>
   `<tr class="${strong ? "strong" : ""}"><th>${k}<span class="sig">${sig || "&nbsp;"}</span></th>${chords.map(c => `<td>${c}</td>`).join("")}</tr>`
 ).join("");
