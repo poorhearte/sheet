@@ -2,33 +2,46 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>조별 코드표 (행열 변환)</title>
+<title>조별 코드표 (행열 변환) - 장조·단조</title>
 <style>
-  /* A4 세로 한 장에 맞춰 인쇄: 표가 페이지를 가득 채우고(세로로 길쭉하게) 글자를 칸 폭에 맞게 크게 */
+  /* A4 세로 한 장에 장조 표(위)와 단조 표(아래) 두 개를 인쇄: 표마다 페이지 높이의 절반 */
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
-  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm; overflow: hidden; }
-  table { border-collapse: collapse; table-layout: fixed; width: 100%; height: 100%; }
-  th, td { border: 1.5px solid #9aa3b5; text-align: center; vertical-align: middle; }
-  thead th { background: #e3f0dc; font-size: 27px; font-weight: bold; padding: 6px 2px; line-height: 1.2; height: 19%; }
-  thead th small { display: block; font-size: 18px; font-weight: normal; color: #333; line-height: 1.25; margin-top: 6px; white-space: nowrap; letter-spacing: -0.04em; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 7mm 8mm; overflow: hidden;
+          display: flex; flex-direction: column; gap: 5mm; }
+  .block { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+  /* 표 제목: 장조 / 단조 */
+  .caption { font-size: 16px; font-weight: bold; margin: 0 0 2mm 2px; }
+  .caption small { font-size: 12px; font-weight: normal; color: #444; margin-left: 6px; }
+  table { border-collapse: collapse; table-layout: fixed; width: 100%; flex: 1 1 0; }
+  th, td { border: 1px solid #9aa3b5; text-align: center; vertical-align: middle; }
+  thead th { background: #e3f0dc; font-size: 15px; font-weight: bold; padding: 3px 1px; line-height: 1.15; height: 22%; }
+  thead th small { display: block; font-size: 10px; font-weight: normal; color: #333; line-height: 1.2; margin-top: 3px; white-space: nowrap; letter-spacing: -0.04em; }
   thead th.corner { background: #fff; border-top-color: #fff; border-left-color: #fff; width: 12%; }
-  tbody th { background: #dfe5f5; font-size: 21px; padding: 4px 2px; line-height: 1.2; }
-  tbody th .sig { display: block; font-size: 18px; letter-spacing: 2px; }
-  td { font-size: 27px; }
+  .minor thead th { background: #f6e3e3; }
+  .minor thead th.corner { background: #fff; }
+  tbody th { background: #dfe5f5; font-size: 12px; padding: 2px 1px; line-height: 1.15; }
+  .minor tbody th { background: #ece3f5; }
+  tbody th .sig { display: block; font-size: 10px; letter-spacing: 1px; }
+  tbody th .rel { display: block; font-size: 9px; font-weight: normal; color: #555; }
+  td { font-size: 16px; }
   tr.strong td { font-weight: bold; }
 </style>
 </head>
 <body>
 <div class="page">
-<table>
-  <thead id="head"></thead>
-  <tbody id="body"></tbody>
-</table>
+  <div class="block">
+    <div class="caption">장조</div>
+    <table><thead id="majorHead"></thead><tbody id="majorBody"></tbody></table>
+  </div>
+  <div class="block minor">
+    <div class="caption">단조<small>자연단음계 · 같은 줄의 장조와 조표가 같은 나란한조</small></div>
+    <table><thead id="minorHead"></thead><tbody id="minorBody"></tbody></table>
+  </div>
 </div>
 <script>
-const degrees = [
+const majorDegrees = [
   ["1도 화음", "으뜸화음/Tonic"],
   ["2도 화음", "윗으뜸화음/Super Tonic"],
   ["3도 화음", "가온화음/Mediant"],
@@ -37,8 +50,10 @@ const degrees = [
   ["6도 화음", "버금가온화음/Sub Mediant"],
   ["7도 화음", "이끎화음/Leading Tone"],
 ];
+// 자연단음계의 7도는 이끎음(반음 아래)이 아니라 온음 아래라서 Subtonic
+const minorDegrees = majorDegrees.slice(0, 6).concat([["7도 화음", "Subtonic"]]);
 // [조, 조표, 1~7도 화음, 굵게 표시]
-const keys = [
+const majorKeys = [
   ["C장조",  "",      ["C",  "Dm",  "Em",  "F",  "G",  "Am",  "Bdim"],  true],
   ["D장조",  "##",    ["D",  "Em",  "F#m", "G",  "A",  "Bm",  "C#dim"], false],
   ["E장조",  "####",  ["E",  "F#m", "G#m", "A",  "B",  "C#m", "D#dim"], true],
@@ -48,19 +63,35 @@ const keys = [
   ["Bb장조", "♭♭",    ["Bb", "Cm",  "Dm",  "Eb", "F",  "Gm",  "Adim"],  true],
   ["B장조",  "#####", ["B",  "C#m", "D#m", "E",  "F#", "G#m", "A#dim"], false],
 ];
+// 단조: 같은 줄 장조의 나란한조(6도에서 시작), 자연단음계 1~7도 화음 (i, ii°, III, iv, v, VI, VII)
+const minorKeys = [
+  ["A단조",  "",      ["Am",  "Bdim",  "C",  "Dm",  "Em",  "F",  "G"],  true,  "C장조"],
+  ["B단조",  "##",    ["Bm",  "C#dim", "D",  "Em",  "F#m", "G",  "A"],  false, "D장조"],
+  ["C#단조", "####",  ["C#m", "D#dim", "E",  "F#m", "G#m", "A",  "B"],  true,  "E장조"],
+  ["D단조",  "♭",     ["Dm",  "Edim",  "F",  "Gm",  "Am",  "Bb", "C"],  false, "F장조"],
+  ["E단조",  "#",     ["Em",  "F#dim", "G",  "Am",  "Bm",  "C",  "D"],  true,  "G장조"],
+  ["F#단조", "###",   ["F#m", "G#dim", "A",  "Bm",  "C#m", "D",  "E"],  false, "A장조"],
+  ["G단조",  "♭♭",    ["Gm",  "Adim",  "Bb", "Cm",  "Dm",  "Eb", "F"],  true,  "Bb장조"],
+  ["G#단조", "#####", ["G#m", "A#dim", "B",  "C#m", "D#m", "E",  "F#"], false, "B장조"],
+];
 
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 // 칸이 좁으니 긴 이름은 두 줄로: 한글은 "화음" 앞에서, 영어는 띄어쓰기에서 줄바꿈
 const smallName = n => {
+  if (!n.includes("/")) return esc(n);
   const [ko, en] = n.split("/");
   const k = ko.length > 4 ? ko.replace(/화음$/, "<br>화음") : ko;
   return k + "<br>" + esc(en).replace(/ /g, "<br>");
 };
-document.getElementById("head").innerHTML =
+const headHtml = degrees =>
   `<tr><th class="corner"></th>${degrees.map(([d, n]) => `<th>${d.replace(" ", "<br>")}<small>${smallName(n)}</small></th>`).join("")}</tr>`;
-document.getElementById("body").innerHTML = keys.map(([k, sig, chords, strong]) =>
-  `<tr class="${strong ? "strong" : ""}"><th>${k}<span class="sig">${sig || "&nbsp;"}</span></th>${chords.map(c => `<td>${c}</td>`).join("")}</tr>`
+const bodyHtml = keys => keys.map(([k, sig, chords, strong, rel]) =>
+  `<tr class="${strong ? "strong" : ""}"><th>${k}<span class="sig">${sig || "&nbsp;"}</span>${rel ? `<span class="rel">(${rel})</span>` : ""}</th>${chords.map(c => `<td>${c}</td>`).join("")}</tr>`
 ).join("");
+document.getElementById("majorHead").innerHTML = headHtml(majorDegrees);
+document.getElementById("majorBody").innerHTML = bodyHtml(majorKeys);
+document.getElementById("minorHead").innerHTML = headHtml(minorDegrees);
+document.getElementById("minorBody").innerHTML = bodyHtml(minorKeys);
 </script>
 </body>
 </html>

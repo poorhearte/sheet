@@ -8,14 +8,15 @@
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   :root { --ly: 22px; --ch: 16px; --g: #C00000; --c: #0057B8; --line: #555; }
   html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
-  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 4mm 6mm; overflow: hidden; }
-  .title { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 0 4mm 2mm; overflow: hidden; } /* 가사가 작은 곡: 제목 위·마지막 줄 아래 여백 최소 (rule.txt 8) */
+  .title { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 4px; }
   /* 첫 마디가 바로 코드로 시작해 코드 안내를 넣을 빈 마디가 없으므로 제목 왼쪽 위에 표시 */
   .legend { position: absolute; left: 0; top: 0; font-size: 15px; font-weight: 800; line-height: 1.15; }
   h1 { font-size: 34px; margin: 0; }
   h2 { margin: 0; }
   /* 한 줄 = 같은 폭의 4마디 */
-  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 14px; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 4px; } /* 줄 사이 여백 최소 */
+  .row:last-child { margin-bottom: 0; }
   .m { display: flex; min-width: 0; }
   .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
@@ -23,14 +24,17 @@
   .ch i.g { color: var(--g); }
   .ch i.c { color: var(--c); }
   /* 코드 번호(도수): 코드 오른쪽에 같은 크기, 진한 회색 */
-  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
+  /* 코드 번호(도수)는 회색 동그라미 안에 흰 숫자로 써서 눈에 잘 띄게 (동그라미는 코드 줄 높이와 칸 폭 계산에 영향 없음) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 좁은 칸에서 동그라미가 다음 줄(가사 위)로 밀려 내려가지 않게 코드와 번호를 한 줄로 */
+  .ch i { white-space: nowrap; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
   .m.last > .part:last-child .ch::after { right: 0; }
   .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
   /* 가사: 1절과 2절을 위아래 두 줄로, 글자 간격을 살짝 좁힘 */
-  .lys { padding: 6px 2px 0 4px; }
+  .lys { padding: 1px 2px 0 4px; } /* 코드 가로선과 가사 사이 최소 */
   .ly { display: flex; gap: 4px; font-size: var(--ly); font-weight: bold; line-height: 1.2; white-space: nowrap; letter-spacing: -0.04em; }
   .ly .next { margin-left: auto; text-align: right; }
   /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
@@ -83,8 +87,8 @@ function transpose(chord, steps) {
 const KEYS = [["g", 5, "G장조: G Em7 Am D"], ["c", -2, "C장조: C Am7 Dm G"]];
 // 1·4·5만 쓰는 곡이 아니므로 7코드는 그대로 둠 (rule.txt 3), 괄호는 쓰지 않음
 const label = c => c;
-// 가장 아래 코드 줄(C코드)에만 코드 번호(도수)를 오른쪽에 붙임: C=1, Am7=6, Dm=2, G=5
-const DEGREE_KEY = "c", DEGREE_ROOT = "C";
+// 가장 위 코드 줄(G코드)에만 코드 번호(도수)를 오른쪽에 붙임 (번호는 C코드 기준과 같음: C=1, Am7=6, Dm=2, G=5)
+const DEGREE_KEY = "g", DEGREE_ROOT = "G"; // 코드 번호는 가장 위 코드 줄(G장조) 옆에 표시
 const DEGREES = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
 function degree(chord) {
   const r = chord.match(/^[A-G][#b]?/)[0];
@@ -147,22 +151,24 @@ let best = 9;
 for (let ly = 30; ly >= 9; ly -= 0.25) {
   if (fits(ly, ly)) { best = ly; break; }
 }
-// 2) 남는 세로 공간을 가사 세로 늘림과 코드 크기에 함께 나눔 (rule.txt 8)
-//    코드 크기를 늘어난 가사 높이에 비례하게 맞춰, 코드가 가사보다 너무 작아지지 않게 함
-search:
-for (let sy = 1.3; sy >= 1; sy -= 0.02) {
+// 2) 가사가 작은 곡이라 여백을 최소화하고(rule.txt 8), 남는 높이는 먼저 가사 세로 늘림(최대 2.1배)에 씀
+//    (코드는 가사와 같은 크기로 두고 맞춤)
+const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+const fitsH = () => song.getBoundingClientRect().bottom <= pageBottom - 4;
+for (let sy = 2.1; sy >= 1; sy -= 0.02) {
   root.setProperty("--sy", sy.toFixed(2));
-  // 코드 글자 폭이 좁은 칸에 걸리면 코드만 조금 줄여서 다시 맞춤
-  for (let ch = best * sy * 0.85; ch >= Math.max(best, best * sy * 0.7); ch -= 0.5) {
-    if (fits(best, ch)) break search;
-  }
+  if (fits(best, best) && fitsH()) break;
+}
+// 2-1) 그래도 남는 높이는 줄 사이 여백 대신 코드를 키우는 데 씀 (가사의 1.5배까지)
+for (let ch = best * 1.5; ch >= best; ch -= 0.25) {
+  if (fits(best, ch) && fitsH()) break;
+  if (ch - 0.25 < best) fits(best, best);
 }
 
-// 아래가 비면, 남는 높이를 줄 사이에 고르게 나눠 페이지를 채움
+// 3) 그래도 남는 높이는 줄과 줄 사이에만 나누고, 마지막 줄 아래에는 두지 않음
 const rowEls = [...document.querySelectorAll(".row")];
-const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
 const free = pageBottom - song.getBoundingClientRect().bottom - 4;
-if (free > 0) rowEls.forEach(r => r.style.marginBottom = `${14 + free / rowEls.length}px`);
+if (free > 0) rowEls.forEach((r, i) => r.style.marginBottom = i === rowEls.length - 1 ? "0px" : `${4 + (free + 4) / (rowEls.length - 1)}px`);
 </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="measuring">
 <head>
 <meta charset="utf-8">
 <title>너의 의미 - 아이유 (G·C 코드, 마디 정렬)</title>
@@ -7,7 +7,11 @@
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   :root { --ly: 22px; --ch: 16px; --g: #C00000; --c: #0057B8; --line: #555; }
-  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  /* 새 글꼴: 한글 = 나눔스퀘어 네오(가사는 진하지 않게 기본 Bold), 코드 글자 = Atkinson Hyperlegible (파일은 ../fonts/) */
+  @font-face { font-family: "NanumSquareNeo"; font-weight: 400 700; src: url("../fonts/NanumSquareNeo-cBd.woff2") format("woff2"); }
+  @font-face { font-family: "NanumSquareNeo"; font-weight: 800 900; src: url("../fonts/NanumSquareNeo-dEb.woff2") format("woff2"); }
+  @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400 900; src: url("../fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype"); }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "NanumSquareNeo", "Malgun Gothic", "맑은 고딕", sans-serif; }
   .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 4mm 6mm; overflow: hidden; }
   .title { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 14px; }
   /* 첫 마디가 바로 코드로 시작해 코드 안내를 넣을 빈 마디가 없으므로 제목 왼쪽 위에 표시 */
@@ -19,11 +23,17 @@
   .m { position: relative; display: flex; min-width: 0; }
   .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
-  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
+  .ch i { font-family: "Atkinson Hyperlegible", Arial, sans-serif; display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
   .ch i.g { color: var(--g); }
   .ch i.c { color: var(--c); }
   /* 코드 번호(도수): 코드 오른쪽에 같은 크기, 진한 회색 */
-  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
+  /* 코드 번호(도수)는 회색 동그라미 안에 흰 숫자로 써서 눈에 잘 띄게 (동그라미는 코드 줄 높이와 칸 폭 계산에 영향 없음) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 좁은 칸에서 동그라미가 다음 줄(가사 위)로 밀려 내려가지 않게 코드와 번호를 한 줄로 */
+  .ch i { white-space: nowrap; }
+  .measuring .ch i { white-space: normal; }
+/* 크기를 계산하는 동안에는 코드 번호를 예전 숫자 크기로 재고(동그라미가 칸 폭을 더 차지해 글자가 작아지지 않게), 계산이 끝나면 동그라미로 표시 */
+  .measuring .ch i .deg { display: inline; width: auto; height: auto; line-height: inherit; margin-left: 0.2em; font-size: 1em; background: none; border-radius: 0; vertical-align: baseline; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
@@ -32,6 +42,8 @@
   /* 가사: 글자 간격을 살짝 좁히고 외곽선을 더해 더 크고 진하게 */
   .ly { display: flex; gap: 3px; padding: 6px 1px 0 3px; font-size: var(--ly); font-weight: bold; line-height: 1.15; white-space: nowrap; letter-spacing: -0.06em; word-spacing: -0.1em; }
   .ly .next { margin-left: auto; text-align: right; }
+  /* 나눔스퀘어 네오는 띄어쓰기가 좁아 단어가 붙어 보이므로 단어 사이를 조금 넓힘 */
+  .ly { word-spacing: 0.1em; }
   /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
   .ly { height: calc(var(--ly) * 1.15 * var(--sy, 1)); }
   .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
@@ -48,7 +60,7 @@
 </head>
 <body>
 <div class="page">
-  <div class="title"><div class="legend"></div><h1>너의 의미</h1><h2>산울림, 아이유</h2></div>
+  <div class="title"><div class="legend"></div><h1>너의 의미</h1><h2>산울림 (1984), 아이유 (2014)</h2></div>
   <div id="song"></div>
   <div class="note"><b>D.C.</b>까지 연주 후 처음으로 돌아가서 <b>Fine</b>까지 연주하고 끝낸다.</div>
 </div>
@@ -84,8 +96,8 @@ function transpose(chord, steps) {
 const KEYS = [["g", 7, "G장조: G C D Em"], ["c", 0, "C장조: C F G Am"]];
 // 7코드는 7을 빼고 기본 코드로 표시, 예: G7 → G
 const label = c => c.replace(/7$/, "");
-// 가장 아래 코드 줄(C코드)에만 코드 번호(도수)를 오른쪽에 붙임: C=1, F=4, G=5, Am=6
-const DEGREE_KEY = "c", DEGREE_ROOT = "C";
+// 가장 위 코드 줄(G코드)에만 코드 번호(도수)를 오른쪽에 붙임 (번호는 C코드 기준과 같음: C=1, F=4, G=5, Am=6)
+const DEGREE_KEY = "g", DEGREE_ROOT = "G"; // 코드 번호는 가장 위 코드 줄(G장조) 옆에 표시
 const DEGREES = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
 function degree(chord) {
   const r = chord.match(/^[A-G][#b]?/)[0];
@@ -129,6 +141,8 @@ rows.forEach((measures, r) => {
   song.appendChild(row);
 });
 
+// 새 글꼴을 다 불러온 뒤에 크기를 계산 (불러오기 전 맑은 고딕으로 재면 크기가 틀어짐)
+Promise.all([document.fonts.load("bold 20px NanumSquareNeo"), document.fonts.load("800 20px \"Atkinson Hyperlegible\"")]).then(() => {
 // 가사가 줄바꿈 없이 마디 안에 들어가고, A4 한 장의 높이에 맞는 가장 큰 글자 크기를 찾음
 // 가사 크기는 마디 폭이, 코드 크기는 페이지 높이가 정하므로 둘을 따로 맞춤
 const page = document.querySelector(".page");
@@ -147,18 +161,23 @@ for (let ly = 44; ly >= 9; ly -= 0.25) {
   }
 }
 
-// 가로 폭은 위에서 정한 크기 그대로 두고, 페이지 높이에 맞는 만큼 가사를 세로로 최대한 늘림 (최대 3배)
-for (let sy = 3; sy > 1; sy -= 0.05) {
+// 가로 폭은 위에서 정한 크기 그대로 두고, 남는 높이를 줄 사이 여백 대신 가사 세로 늘림에 씀 (획이 너무 두꺼워 보이지 않게 최대 2.6배)
+// (높이는 맨 아래 안내문 위치로 확인)
+const noteEl = document.querySelector(".note");
+const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+for (let sy = 2.6; sy > 1; sy -= 0.02) {
   root.setProperty("--sy", sy.toFixed(2));
-  if (page.scrollHeight <= page.clientHeight) break;
+  if (noteEl.getBoundingClientRect().bottom <= pageBottom) break;
 }
 
-// 줄이 적어 아래가 비면, 남는 높이를 줄 사이에 고르게 나눠 페이지를 채움
+// 아래에 남는 높이는 마지막에 몰지 않고 줄과 줄 사이(안내문 위 포함)에 고르게 나눔
 const rowEls = [...document.querySelectorAll(".row")];
-const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
-const free = pageBottom - document.querySelector(".note").getBoundingClientRect().bottom;
-const extra = Math.min(70, free / (rowEls.length + 1));
+const free = pageBottom - noteEl.getBoundingClientRect().bottom;
+const extra = Math.max(0, (free - 4) / rowEls.length);
 rowEls.forEach(r => r.style.marginBottom = `${8 + extra}px`);
+// 크기 계산이 끝났으므로 코드 번호를 동그라미로 표시
+document.documentElement.classList.remove("measuring");
+});
 </script>
 </body>
 </html>

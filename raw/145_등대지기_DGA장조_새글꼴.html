@@ -7,7 +7,11 @@
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   :root { --ly: 22px; --ch: 16px; --a: #C00000; --g: #0057B8; --d: #1E7B34; --line: #555; }
-  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  /* 새 글꼴: 한글 = 나눔스퀘어 네오(굵게 쓰는 글자는 한 단계 더 굵게), 코드 글자 = Atkinson Hyperlegible (파일은 ../fonts/) */
+  @font-face { font-family: "NanumSquareNeo"; font-weight: 400 700; src: url("../fonts/NanumSquareNeo-dEb.woff2") format("woff2"); }
+  @font-face { font-family: "NanumSquareNeo"; font-weight: 800 900; src: url("../fonts/NanumSquareNeo-eHv.woff2") format("woff2"); }
+  @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400 900; src: url("../fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype"); }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "NanumSquareNeo", "Malgun Gothic", "맑은 고딕", sans-serif; }
   .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 6mm 6mm; overflow: hidden; }
   .title { display: flex; justify-content: center; align-items: baseline; gap: 16px; margin-bottom: 10px; }
   h1 { font-size: 34px; margin: 0; }
@@ -17,12 +21,15 @@
   .m { display: flex; min-width: 0; }
   .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
-  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
+  .ch i { font-family: "Atkinson Hyperlegible", Arial, sans-serif; display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; }
   .ch i.a { color: var(--a); }
   .ch i.g { color: var(--g); }
   .ch i.d { color: var(--d); }
   /* 코드 번호(도수): 코드 오른쪽에 조금 작게 */
-  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
+  /* 코드 번호(도수)는 회색 동그라미 안에 흰 숫자로 써서 눈에 잘 띄게 (동그라미는 코드 줄 높이와 칸 폭 계산에 영향 없음) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 좁은 칸에서 동그라미가 다음 줄(가사 위)로 밀려 내려가지 않게 코드와 번호를 한 줄로 */
+  .ch i { white-space: nowrap; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
@@ -32,6 +39,8 @@
   .lys { padding: 6px 2px 0 4px; }
   .ly { display: flex; gap: 4px; font-size: var(--ly); font-weight: bold; line-height: 1.2; white-space: nowrap; letter-spacing: -0.04em; }
   .ly .next { margin-left: auto; text-align: right; }
+  /* 나눔스퀘어 네오는 띄어쓰기가 좁아 단어가 붙어 보이므로 단어 사이를 넓힘 */
+  .ly { word-spacing: 0.3em; }
   /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
   .ly { height: calc(var(--ly) * 1.2 * var(--sy, 1)); }
   .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
@@ -156,6 +165,8 @@ rows.forEach((measures, r) => {
   song.appendChild(row);
 });
 
+// 새 글꼴을 다 불러온 뒤에 크기를 계산 (불러오기 전 맑은 고딕으로 재면 크기가 틀어짐)
+Promise.all([document.fonts.load('bold 20px NanumSquareNeo'), document.fonts.load('800 20px "Atkinson Hyperlegible"')]).then(() => {
 // 가사가 줄바꿈 없이 마디 안에 들어가고, A4 한 장의 높이에 맞는 가장 큰 글자 크기를 찾음
 // 가사 크기는 마디 폭이, 코드 크기는 페이지 높이가 정하므로 둘을 따로 맞춤
 const page = document.querySelector(".page");
@@ -181,6 +192,7 @@ for (let sy = 1.7; sy >= 1; sy -= 0.02) {
   if (fits(best, best * sy * 0.85)) break;
 }
 
+});
 </script>
 </body>
 </html>

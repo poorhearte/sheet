@@ -23,7 +23,10 @@
   .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
   .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; color: var(--g); white-space: nowrap; }
   /* 코드 번호(도수): 코드 오른쪽에 같은 크기, 진한 회색 */
-  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
+  /* 코드 번호(도수)는 회색 동그라미 안에 흰 숫자로 써서 눈에 잘 띄게 (동그라미는 코드 줄 높이와 칸 폭 계산에 영향 없음) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 좁은 칸에서 동그라미가 다음 줄(가사 위)로 밀려 내려가지 않게 코드와 번호를 한 줄로 */
+  .ch i { white-space: nowrap; }
   /* 조 밖의 어려운 코드: 노란 형광펜 배경 */
   .ch i .hl { background: #FFEB3B; padding: 0 0.15em; border-radius: 0.15em; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */

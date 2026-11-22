@@ -26,7 +26,10 @@
   .ch i.g { color: var(--g); }
   .ch i.c { color: var(--c); }
   /* 코드 번호(도수): 코드 오른쪽에 같은 크기, 진한 회색 */
-  .ch i .deg { margin-left: 0.2em; font-size: 1em; color: #555; }
+  /* 코드 번호(도수)는 회색 동그라미 안에 흰 숫자로 써서 눈에 잘 띄게 (동그라미는 코드 줄 높이와 칸 폭 계산에 영향 없음) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 좁은 칸에서 동그라미가 다음 줄(가사 위)로 밀려 내려가지 않게 코드와 번호를 한 줄로 */
+  .ch i { white-space: nowrap; }
   /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
   .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
   .m > .part:first-child .ch::before { left: 0; }
@@ -84,8 +87,8 @@ function transpose(chord, steps) {
 const KEYS = [["g", 0, "G장조: G C D Em"], ["c", 5, "C장조: C F G Am"]];
 // 1·4·5만 쓰는 곡이 아니므로 7코드는 그대로 둠 (rule.txt 3), 괄호는 쓰지 않음
 const label = c => c;
-// 가장 아래 코드 줄(C코드)에만 코드 번호(도수)를 오른쪽에 붙임: C=1, F=4, G=5, Am=6
-const DEGREE_KEY = "c", DEGREE_ROOT = "C";
+// 가장 위 코드 줄(G코드)에만 코드 번호(도수)를 오른쪽에 붙임 (번호는 C코드 기준과 같음: C=1, F=4, G=5, Am=6)
+const DEGREE_KEY = "g", DEGREE_ROOT = "G"; // 코드 번호는 가장 위 코드 줄(G장조) 옆에 표시
 const DEGREES = { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 9: "6", 11: "7" };
 function degree(chord) {
   const r = chord.match(/^[A-G][#b]?/)[0];
