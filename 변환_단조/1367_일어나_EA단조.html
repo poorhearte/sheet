@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>그 겨울의 찻집 (E·A 단조, 마디 정렬)</title>
+<title>일어나 (E·A 단조, 마디 정렬)</title>
 <style>
   @page { size: A4; margin: 0; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -25,7 +25,7 @@
   .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; white-space: nowrap; }
   .ch i.g { color: var(--g); }
   .ch i.c { color: var(--c); }
-  /* 코드 번호(도수): 맨 위 코드 줄에만, 회색 동그라미 안에 흰 숫자 (rule.txt 4, 145_연가_DGA장조_새글꼴과 같게) */
+  /* 코드 번호(도수): 맨 위 코드 줄에만, 회색 동그라미 안에 흰 숫자 (rule.txt 4, 145_연가_DGA장조과 같게) */
   .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
   /* 어려운 코드(조 밖의 코드) 노란 형광펜 – 코드 글자에만, 번호에는 칠하지 않음 (rule.txt 5) */
   .ch i .hl { display: inline-block; line-height: 1; background: #FFEB3B; padding: 0 0.15em; border-radius: 0.15em; } /* 상자를 글자 높이에 맞춰 위아래 줄 형광펜이 서로 코드를 가리지 않게 */
@@ -50,27 +50,28 @@
 </head>
 <body>
 <div class="page">
-  <div class="title"><div class="legend"></div><h1>그 겨울의 찻집</h1><div class="info"><div>조용필 8집 (1985) 트로트</div><div>원곡: C minor (C단조) key</div></div></div>
+  <div class="title"><div class="legend"></div><h1>일어나</h1><div class="info"><div>김광석 4집 (1994)</div><div>원곡: E minor (E단조) key</div></div></div>
   <div id="song"></div>
 </div>
 <script>
 // 한 줄에 4마디씩, 마디 폭은 모두 같게 표시 (rule.txt 6)
-// [코드]는 그 위치부터 적용(원본 악보의 Am 모양 = A단조 기준), 마디 가운데의 [코드]는 가사 길이에 맞춰 칸을 나눔
+// [코드]는 그 위치부터 적용(원본 E단조 기준), 마디 가운데의 [코드]는 가사 길이에 맞춰 칸을 나눔
 // " / " 뒤의 가사는 다음 마디로 이어지는 가사라서 마디 끝(오른쪽)에 붙여 표시
-// 코드와 마디, 가사 위치는 단조/그겨울의찻집.png 기준 (원본: Capo 3 + Am 모양 → 실제 소리는 C단조)
+// 코드와 마디, 가사 위치는 raw/일어나_E단조.png 기준 (전주 2줄 포함, 구역 표시 INT/A/B는 넣지 않음)
 const TIME = "4/4";
 const rows = [
-  // 전주 6마디(가사 없음): 4마디 + 2마디로 나눠, 가사 부분이 4마디 단위로 줄이 맞게 함
-  ["[Am]", "[Dm][E7]", "[Am]", "[C]"],
-  ["[E7]", "[Am]"],
-  ["[Am]바람 속으로 / 걸어", "[Am]갔어요 -", "[Dm]이른 아침에 그 찻", "[E7]집 - / 마른"],
-  ["[Am]꽃 걸 - 린 / 창", "[Dm]가에 - 앉아", "[E7]외로움을 마셔", "[Am]요"],
-  ["[Dm]아름다운 죄 -", "[Am]사랑 때문 - 에", "[G]홀로 지샌 긴 - 밤이", "[E7]여"],
-  ["[Am]뜨거운 [Dm]이름", "[G7]가슴에 - [C]두면", "[E7]왜 한숨이 - 나는 걸", "[Am]까 [A7]아 -"],
-  ["[Dm]웃고 있어도", "[Am]눈물이 난 [E7]다", "[E7]그대 나의 사랑", "[Am]아"],
+  // 전주
+  ["[Em][D]", "[Em]", "[G][D]", "[Em]"],
+  ["[C][G]", "[D][Em]", "[G][D]", "[Em]"],
+  ["[Em]검은 밤[D]의 가운", "[Em]데 서 있어 한치", "[G]앞도 [D]보이질 않", "[Em]아 / 어디"],
+  ["[C]로 가야하[G]나 어디", "[D]에 있을[Em]까 둘러", "[G]봐도 [D]소용없었", "[Em]지"],
+  ["[Em]인생이란 [D]강물 위를", "[Em]뜻 없이 부초", "[G]처럼 [D]떠다니다", "[Em]가 / 어느"],
+  ["[C]고요한 [G]호숫가에", "[D]닿으면 [Em]물과", "[G]함께 [D]썩어가겠", "[Em]지 / 일어"],
+  ["[C]나 / 일어", "[G]나 / 다시", "[D]한번 해보는거", "[Em]야 / 일어"],
+  ["[C]나 / 일어", "[G]나 / 봄의", "[D]새 싹들 처", "[Em]럼"],
 ];
 
-// 원본 A단조를 기준으로 반음 단위로 옮김 (A단조→E단조: +7, A단조→A단조: 0)
+// 원본 E단조를 기준으로 반음 단위로 옮김 (E단조→E단조: 0, E단조→A단조: +5)
 // 단조 곡은 G장조·C장조의 나란한조(관계 단조)인 E단조·A단조 두 줄로 씀 (위 E단조 빨강, 아래 A단조 파랑)
 const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
@@ -80,19 +81,19 @@ function transpose(chord, steps) {
   return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
 }
 // 조 안내: "조 이름: 그 조의 1·4·5 코드" (단조의 5는 화성단음계의 딸림7화음: A단조 E7, E단조 B7)
-const KEYS = [["g", 7, "E단조: Em Am B7"], ["c", 0, "A단조: Am Dm E7"]];
-// 1·4·5만 쓰는 곡이 아니므로(3·7 코드 C, G도 씀) 7코드는 그대로 둠 (rule.txt 3)
+const KEYS = [["g", 0, "E단조: Em Am B7"], ["c", 5, "A단조: Am Dm E7"]];
+// 7코드는 쓰지 않는 곡 (rule.txt 3, 13)
 const label = c => c;
 // 코드 번호는 맨 위 E단조 줄에만, 단조의 으뜸음 E를 1로 해서 떨어진 거리로 매김
-// (Em=1, G=3, Am=4, B7=5, D=7, E7=1)
+// (Em=1, G=3, C=6, D=7 / A단조 줄로 세어도 Am=1, C=3, F=6, G=7로 같음)
 const DEGREE_KEY = "g", DEGREE_ROOT = "E";
 const DEGREES = { 0: "1", 1: "2", 2: "2", 3: "3", 4: "3", 5: "4", 6: "5", 7: "5", 8: "6", 9: "6", 10: "7", 11: "7" };
 function degree(chord) {
   const r = chord.match(/^[A-G][#b]?/)[0];
   return DEGREES[(NOTES.indexOf(FLAT[r] || r) - NOTES.indexOf(DEGREE_ROOT) + 12) % 12] || "";
 }
-// 어려운 코드: 조 밖의 코드 A7 (Am 자리에 쓰는 장화음 7코드, 다음 Dm으로 이끄는 부딸림화음) → E단조 줄에서는 E7
-const HARD = new Set(["A7"]);
+// 어려운 코드: 조 밖의 코드 없음 (Em, G, C, D 모두 E단조 안의 코드)
+const HARD = new Set([]);
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 document.querySelector(".legend").innerHTML = KEYS.map(([cls, , name]) => `<div style="color:var(--${cls})">${name}</div>`).join("");
@@ -111,8 +112,8 @@ rows.forEach((measures, r) => {
       const p = document.createElement("div");
       const first = r === 0 && i === 0 && k === 0;
       p.className = "part" + (first ? " has-time" : "");
-      // 마디 가운데서 코드가 바뀌면, 가사 길이에 맞춰 칸을 나눔 (가사가 없으면 반씩)
-      if (parts.length > 1) p.style.flex = lyric ? "1 1 auto" : "1 1 0";
+      // 마디 가운데서 코드가 바뀌면, 가사(가사가 없으면 코드) 길이에 맞춰 칸을 나눔
+      if (parts.length > 1) p.style.flex = "1 1 auto";
       const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
       const chordText = (steps, cls) => {
         const c = transpose(chord, steps);
@@ -147,10 +148,11 @@ for (let ly = 40; ly >= 9; ly -= 0.25) {
   if (fits(ly, ly)) { best = ly; break; }
 }
 // 2) 남는 세로 공간을 가사 세로 늘림(최대 3배)과 코드 크기에 함께 나눔 (rule.txt 8)
+//    먼저 가사를 세로로 가장 많이 늘리고, 그 안에서 코드를 가장 크게 (좁은 칸의 코드+번호 동그라미가 들어가는 만큼)
 search:
 for (let sy = 3; sy >= 1; sy -= 0.02) {
   root.setProperty("--sy", sy.toFixed(2));
-  for (let ch = best * sy * 0.85; ch >= Math.max(best, best * sy * 0.7); ch -= 0.5) {
+  for (let ch = best * 1.6; ch >= best; ch -= 0.5) {
     if (fits(best, ch)) break search;
   }
 }
