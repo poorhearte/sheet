@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>잊혀진 계절 (C·G 장조, 마디 정렬)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { --ly: 22px; --ch: 16px; --g: #C00000; --c: #0057B8; /* G장조 빨강, C장조 파랑 (rule.txt 2) */ --line: #555; }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "Malgun Gothic", "맑은 고딕", sans-serif; }
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 8mm 4mm 6mm; overflow: hidden; }
+  .title { position: relative; display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 10px; }
+  /* 첫 마디가 바로 코드로 시작해 조 안내를 넣을 빈 마디가 없으므로 제목 왼쪽 위에 표시 */
+  .legend { position: absolute; left: 0; top: 0; font-size: 15px; font-weight: 800; line-height: 1.15; }
+  h1 { font-size: 34px; margin: 0; white-space: nowrap; }
+  /* 조 안내가 제목 왼쪽 위에 있으므로 제목이 겹치지 않게 오른쪽으로 비켜 줌 (rule.txt 9) */
+  .title { padding-left: 150px; }
+  /* 제목 오른쪽 정보 (rule.txt 9): 18px 굵은 글씨, 제목과 세로 가운데 정렬 */
+  .info { font-size: 18px; font-weight: bold; line-height: 1.3; white-space: nowrap; }
+  /* 한 줄 = 같은 폭의 4마디 */
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 14px; }
+  .m { display: flex; min-width: 0; }
+  .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
+  .ch i { display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; white-space: nowrap; }
+  .ch i.g { color: var(--g); }
+  .ch i.c { color: var(--c); }
+  /* 코드 번호(도수): 맨 위 코드 줄에만, 회색 동그라미 안에 흰 숫자 (rule.txt 4, 145_연가_DGA장조_새글꼴과 같게) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 어려운 코드(조 밖의 코드) 노란 형광펜 – 코드 글자에만, 번호에는 칠하지 않음 (rule.txt 5) */
+  .ch i .hl { display: inline-block; line-height: 1; background: #FFEB3B; padding: 0 0.15em; border-radius: 0.15em; } /* 상자를 글자 높이에 맞춰 위아래 줄 형광펜이 서로 코드를 가리지 않게 */
+  /* 마디선: 가로줄을 가로지르는 짧은 세로선 */
+  .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
+  .m > .part:first-child .ch::before { left: 0; }
+  .m.last > .part:last-child .ch::after { right: 0; }
+  .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
+  /* 가사: 글자 간격을 살짝 좁힘 */
+  .lys { padding: 6px 2px 0 4px; }
+  .ly { display: flex; gap: 4px; font-size: var(--ly); font-weight: bold; line-height: 1.2; white-space: nowrap; letter-spacing: -0.04em; }
+  /* 다음 마디로 이어지는 가사: 마디 오른쪽 끝, 마디선 앞에서 반 글자쯤 띄움 (rule.txt 6) */
+  .ly .next { margin-left: auto; margin-right: 0.5em; text-align: right; }
+  /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배) */
+  .ly { height: calc(var(--ly) * 1.2 * var(--sy, 1)); }
+  .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
+  /* 박자표: 마디선 바로 뒤에서 가로줄을 가운데에 두고 위아래로 숫자 표시 */
+  .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
+  .has-time .ch { padding-left: calc(var(--ch) * 0.85 + 12px); }
+  .has-time .lys { padding-left: calc(var(--ly) * 0.6 + 16px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="title"><div class="legend"></div><h1>잊혀진 계절</h1><div class="info"><div>이용 1집 (1982)</div><div>원곡: C major (C장조) key</div></div></div>
+  <div id="song"></div>
+</div>
+<script>
+// 한 줄에 4마디씩, 마디 폭은 모두 같게 표시 (rule.txt 6)
+// [코드]는 그 위치부터 적용(원본 C장조 기준), 마디 가운데의 [코드]는 가사 길이에 맞춰 칸을 나눔
+// " / " 뒤의 가사는 다음 마디로 이어지는 가사라서 마디 끝(오른쪽)에 붙여 표시
+// 코드와 마디, 가사 위치는 원본악보_장조/잊혀진계절.png 기준 (전주 2줄 포함)
+const TIME = "4/4";
+const rows = [
+  // 전주
+  ["[C]", "[G]", "[Am][F]", "[G7]"],
+  ["[C]", "[F]", "[C][G7]", "[C]"],
+  ["[C]지금도 기억하고", "[G]있어요 -", "[F]시월의 마지막 밤", "[C]을"],
+  ["[C]뜻 모를 이야기만", "[G]남긴 채 -", "[F]우리는 헤어졌지", "[G7]요 -"],
+  ["[C]그날의 쓸쓸했던", "[Dm]표정이 -", "[F]그대의 진실인가", "[G7]- 요 - / 한마"],
+  ["[C]디 - 변명도", "[F]못 하고 -", "[C]잊혀져야 [G7]하는 건가", "[C]요 - [G7]"],
+  ["[C]언제나 돌아오는", "[G]계절은 -", "[F]나에게 꿈을 주지", "[G7]만 -"],
+  ["[C]이룰 수 없는 꿈은", "[G]슬퍼요 -", "[C]나를 [G7]울 려", "[C]요 -"],
+];
+
+// 원본 C장조를 기준으로 반음 단위로 옮김 (C→C: 0, C→G: +7)
+// 위 C장조(파랑), 아래 G장조(빨강) 두 줄 (요청에 따라 C장조를 위에)
+const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
+function transpose(chord, steps) {
+  const m = chord.match(/^([A-G][#b]?)(.*)$/);
+  const root = FLAT[m[1]] || m[1];
+  return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
+}
+// 조 안내: 각 조에서 이 곡에 쓰는 코드 (1·2·4·5·6)
+const KEYS = [["c", 0, "C장조: C Dm F G Am"], ["g", 7, "G장조: G Am C D Em"]];
+// 1·4·5만 쓰는 곡이 아니므로(2·6 코드 Dm, Am도 씀) 7코드는 그대로 둠 (rule.txt 3)
+const label = c => c;
+// 코드 번호는 맨 위 C장조 줄에만, 으뜸음 C를 1로 해서 떨어진 거리로 매김
+// (C=1, Dm=2, F=4, G·G7=5, Am=6 / G장조 줄로 세어도 G=1, Am=2, C=4, D·D7=5, Em=6으로 같음)
+const DEGREE_KEY = "c", DEGREE_ROOT = "C";
+const DEGREES = { 0: "1", 1: "2", 2: "2", 3: "3", 4: "3", 5: "4", 6: "5", 7: "5", 8: "6", 9: "6", 10: "7", 11: "7" };
+function degree(chord) {
+  const r = chord.match(/^[A-G][#b]?/)[0];
+  return DEGREES[(NOTES.indexOf(FLAT[r] || r) - NOTES.indexOf(DEGREE_ROOT) + 12) % 12] || "";
+}
+// 어려운 코드: 없음 (모두 C장조 안의 기본 코드)
+const HARD = new Set([]);
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+document.querySelector(".legend").innerHTML = KEYS.map(([cls, , name]) => `<div style="color:var(--${cls})">${name}</div>`).join("");
+
+const song = document.getElementById("song");
+rows.forEach((measures, r) => {
+  const row = document.createElement("div");
+  row.className = "row";
+  measures.forEach((text, i) => {
+    const m = document.createElement("div");
+    const isLastOfSong = r === rows.length - 1 && i === measures.length - 1;
+    m.className = "m" + (i === measures.length - 1 ? " last" : "") + (isLastOfSong ? " end" : "");
+    const parts = text.split(/(?=\[)/);
+    parts.forEach((part, k) => {
+      const [, chord, lyric] = part.match(/^\[([^\]]+)\]\s*(.*)$/);
+      const p = document.createElement("div");
+      const first = r === 0 && i === 0 && k === 0;
+      p.className = "part" + (first ? " has-time" : "");
+      // 마디 가운데서 코드가 바뀌면, 가사(가사가 없으면 코드) 길이에 맞춰 칸을 나눔
+      if (parts.length > 1) p.style.flex = "1 1 auto";
+      const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
+      const chordText = (steps, cls) => {
+        const c = transpose(chord, steps);
+        const t = HARD.has(chord) ? `<span class="hl">${label(c)}</span>` : label(c);
+        return t + (cls === DEGREE_KEY ? `<span class="deg">${degree(c)}</span>` : "");
+      };
+      const [here, next] = lyric.split(/\s*\/\s*/);
+      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps]) => `<i class="${cls}">${chordText(steps, cls)}</i>`).join("")}</div>`
+        + `<div class="lys"><div class="ly"><span>${esc(here || " ")}</span>${next ? `<span class="next">${esc(next)}</span>` : ""}</div></div>`;
+      m.appendChild(p);
+    });
+    row.appendChild(m);
+  });
+  // 전주처럼 가사가 없는 줄은 가사 칸을 두지 않음 (남는 높이를 가사에 줌)
+  if (measures.every(t => !t.replace(/[[^]]*]/g, "").trim())) row.querySelectorAll(".lys").forEach(e => e.remove());
+  song.appendChild(row);
+});
+
+// 가사가 줄바꿈 없이 마디 안에 들어가고, A4 한 장의 높이에 맞는 가장 큰 글자 크기를 찾음
+const page = document.querySelector(".page");
+const root = document.documentElement.style;
+const lyEls = [...document.querySelectorAll(".ly")];
+const chEls = [...document.querySelectorAll(".ch")];
+function fits(ly, ch) {
+  root.setProperty("--ly", ly + "px");
+  root.setProperty("--ch", ch.toFixed(1) + "px");
+  return chEls.every(c => c.scrollWidth <= c.clientWidth) && lyEls.every(l => l.scrollWidth <= l.clientWidth) && page.scrollHeight <= page.clientHeight;
+}
+// 1) 가사 폭이 마디에 들어가는 가장 큰 글자 크기 (코드는 일단 가사와 같은 크기)
+let best = 9;
+for (let ly = 40; ly >= 9; ly -= 0.25) {
+  if (fits(ly, ly)) { best = ly; break; }
+}
+// 2) 남는 세로 공간을 가사 세로 늘림(최대 3배)과 코드 크기에 함께 나눔 (rule.txt 8)
+//    먼저 가사를 세로로 가장 많이 늘리고, 그 안에서 코드를 가장 크게 (좁은 칸의 코드+번호 동그라미가 들어가는 만큼)
+search:
+for (let sy = 3; sy >= 1; sy -= 0.02) {
+  root.setProperty("--sy", sy.toFixed(2));
+  for (let ch = best * 1.6; ch >= best; ch -= 0.5) {
+    if (fits(best, ch)) break search;
+  }
+}
+// 3) 그래도 남는 높이는 줄과 줄 사이에만 나누고, 마지막 줄 아래에는 두지 않음
+const rowEls = [...document.querySelectorAll(".row")];
+const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+const free = pageBottom - song.getBoundingClientRect().bottom - 4;
+if (free > 0) rowEls.forEach((r, i) => r.style.marginBottom = i === rowEls.length - 1 ? "0px" : `${14 + (free + 14) / (rowEls.length - 1)}px`);
+</script>
+</body>
+</html>
