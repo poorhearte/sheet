@@ -149,7 +149,16 @@
   (짧은 글자 뒤의 빈 간격이 줄어, 가장 긴 단어 하나가 아니라 가장 꽉 찬 마디가 글자 크기를 정한다.
    예: You Are My Sunshine) 같은 박의 여러 줄 가사는 위아래로 맞춘다.
   코드는 좁은 칸에 있어도 옆 칸으로 이어서 보이게 하고, 칸 폭 계산에는 넣지 않는다.
-- 글꼴: 맑은 고딕
+- 글꼴: 인쇄해서 볼 때 눈에 잘 띄는(획이 또렷하고 비슷한 글자끼리 헷갈리지 않는) 글꼴을 쓴다.
+  글꼴 파일은 fonts 폴더에 있다. (기준: 145_연가_DGA장조_새글꼴)
+    · 한글(가사, 제목) : 나눔스퀘어 네오 (fonts/NanumSquareNeo-cBd.woff2 = Bold, -dEb.woff2 = ExtraBold)
+      가사는 너무 진해 보이지 않게 Bold(cBd)를 쓴다.
+    · 코드 글자      : Atkinson Hyperlegible (fonts/AtkinsonHyperlegible-Bold.ttf)
+      저시력 독자를 위해 만든 글꼴이라 B·8, C·G, D·O, m·rn 같은 글자가 잘 구별된다.
+    · 글꼴이 없을 때 대신 쓸 글꼴: 맑은 고딕
+  HTML에서는 @font-face로 ../fonts/ 의 파일을 불러오고, 글꼴을 다 불러온 뒤(document.fonts.load)
+  글자 크기를 계산한다. (불러오기 전 맑은 고딕으로 재면 크기가 틀어짐)
+  나눔스퀘어 네오는 띄어쓰기가 좁아 단어가 붙어 보이므로 가사의 단어 사이를 조금 넓힌다(word-spacing 0.1em).
 
 
 9. 제목
