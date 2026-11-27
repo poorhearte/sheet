@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기쁘다 구주 오셨네 (D·G·A 장조, 마디 정렬, 1~4절 같이)</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :root { --ly: 22px; --ch: 16px; --d: #1E7B34; --g: #0057B8; --a: #C00000; /* D장조 초록, G장조 파랑, A장조 빨강 (rule.txt 2) */ --line: #555; }
+  /* 글꼴 (rule.txt 8): 한글 = 나눔스퀘어 네오 (가사는 Bold), 코드 글자 = Atkinson Hyperlegible */
+  @font-face { font-family: "NanumSquareNeo"; font-weight: 400 700; src: url("../fonts/NanumSquareNeo-cBd.woff2") format("woff2"); }
+  @font-face { font-family: "NanumSquareNeo"; font-weight: 800 900; src: url("../fonts/NanumSquareNeo-dEb.woff2") format("woff2"); }
+  @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400 900; src: url("../fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype"); }
+  html, body { margin: 0; background: #fff; color: #000; font-family: "NanumSquareNeo", "Malgun Gothic", "맑은 고딕", sans-serif; }
+  /* 가사를 크게 쓰도록 페이지 여백을 줄임 */
+  .page { box-sizing: border-box; width: 210mm; height: 297mm; margin: 0 auto; padding: 4mm 3mm 3mm; overflow: hidden; }
+  /* 첫 줄 제목은 작게 (조 안내 3줄 높이만큼만 차지) */
+  .title { position: relative; display: flex; justify-content: center; align-items: center; gap: 14px; min-height: 50px; margin-bottom: 8px; }
+  /* 첫 마디가 바로 코드로 시작하므로 조 안내는 제목 왼쪽 위에 (rule.txt 6) */
+  .legend { position: absolute; left: 0; top: 0; font-size: 14px; font-weight: 800; line-height: 1.15; }
+  h1 { font-size: 26px; margin: 0; white-space: nowrap; }
+  .title { padding-left: 130px; }
+  .info { font-size: 15px; font-weight: bold; line-height: 1.3; white-space: nowrap; }
+  /* 한 줄 = 같은 폭의 6마디 (2/4박자라 마디가 짧음, 요청) */
+  .row { display: grid; grid-template-columns: repeat(6, 1fr); margin-bottom: 4px; }
+  .m { display: flex; min-width: 0; }
+  .part { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ch { position: relative; border-bottom: 2px solid var(--line); padding: 0 0 3px 6px; }
+  .ch i { font-family: "Atkinson Hyperlegible", Arial, sans-serif; display: block; height: calc(var(--ch) * 1.02); font-size: var(--ch); font-style: normal; font-weight: 800; line-height: 1; white-space: nowrap; }
+  /* 코드 글자를 옆으로 1.25배 늘려 더 크게 보이게 (rule.txt 8) */
+  .ch i .cn { display: inline-block; transform: scaleX(1.25); transform-origin: left; margin-right: 0.17em; }
+  .ch i.d { color: var(--d); }
+  .ch i.g { color: var(--g); }
+  .ch i.a { color: var(--a); }
+  /* 코드 번호(도수): 맨 위 D장조 줄에만, 회색 동그라미 안에 흰 숫자 (rule.txt 4) */
+  .ch i .deg { display: inline-block; margin-left: 0.25em; width: 1.3em; height: 1.3em; line-height: 1.3em; border-radius: 50%; background: #777; color: #fff; font-size: 0.95em; text-align: center; vertical-align: -0.05em; }
+  /* 마디선: 가로줄을 가로지르는 짧은 세로선, 곡 끝은 겹세로줄 */
+  .m > .part:first-child .ch::before, .m.last > .part:last-child .ch::after { content: ""; position: absolute; bottom: -8px; height: 26px; width: 2px; background: var(--line); }
+  .m > .part:first-child .ch::before { left: 0; }
+  .m.last > .part:last-child .ch::after { right: 0; }
+  .m.end > .part:last-child .ch::after { width: 4px; box-shadow: -6px 0 0 -1px var(--line); }
+  /* 가사: 1~4절을 위아래로 (rule.txt 7) */
+  /* 오른쪽에 약 1/4 글자 여유: 다음 마디 가사와 붙어 보이지 않게 (rule.txt 8) */
+  .lys { padding: 2px calc(var(--ly) * 0.25) 0 3px; }
+  .ly { display: flex; gap: 4px; font-size: var(--ly); font-weight: bold; line-height: 1.2; white-space: nowrap; letter-spacing: -0.05em; }
+  .ly { word-spacing: 0.1em; }
+  .ly .dash { font-size: 0.67em; }
+  /* 각 박의 첫 가사: 글자 뒤에 형광 노랑 V 표시 (요청) */
+  .ly { position: relative; z-index: 0; }
+  .ly em { position: relative; font-style: normal; }
+  .ly em::before { content: "V"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: -1;
+    font-family: Arial, sans-serif; font-size: 1.25em; font-weight: 900; color: #FFEB3B; letter-spacing: 0; }
+  /* "-"만 있는 박도 V가 보이게 한 칸 폭을 주고, V는 원래 크기 그대로 */
+  .ly em.beat { display: inline-block; min-width: 1em; text-align: center; font-size: 0.67em; }
+  .ly em.beat::before { font-size: 1.87em; }
+  /* 코드 글자는 칸 폭을 차지하지 않고 옆 칸으로 이어서 보이게 (rule.txt 8) */
+  .ch i { width: 0; }
+  .ly .next { margin-left: auto; margin-right: 0.5em; text-align: right; }
+  /* 가사를 폭은 그대로 두고 세로로만 늘림 (--sy 배, 최대 3배) */
+  .ly { height: calc(var(--ly) * 1.2 * var(--sy, 1)); }
+  .ly span { display: inline-block; transform: scaleY(var(--sy, 1)); transform-origin: top; }
+  /* 칸마다 남는 폭만큼 글자를 키움 (--k 배, 가사가 작을 때만, rule.txt 8) */
+  .ly { font-size: calc(var(--ly) * var(--k, 1)); }
+  .ly span { transform: scaleY(calc(var(--sy, 1) / var(--k, 1))); }
+  /* 박자표 */
+  .time { position: absolute; left: 6px; top: 100%; transform: translateY(-50%); font-size: calc(var(--ch) * 0.85); font-weight: bold; line-height: 1.25; text-align: center; }
+  .has-time .ch { padding-left: calc(var(--ch) * 0.85 + 12px); }
+  .has-time .lys { padding-left: calc(var(--ly) * 0.6 + 16px); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="title"><div class="legend"></div><h1>기쁘다 구주 오셨네</h1><div class="info"><div>새찬송가 115장 · I. Watts 작사 · G. F. Handel 작곡</div><div>원제: Joy to the World, 원곡: D major (D장조) key</div></div></div>
+  <div id="song"></div>
+</div>
+<script>
+// 한 줄에 6마디씩(요청, rule.txt 6은 4마디), 마디 폭은 모두 같게
+// [코드]는 원본 D장조 기준. "1절 | 2절 | 3절 | 4절" 가사는 위아래 네 줄 (네 절의 코드 진행이 같음, rule.txt 7)
+// " / " 뒤의 가사는 다음 마디로 이어지는 가사라서 마디 오른쪽 끝에 붙임. "-"는 앞 음을 끄는 곳
+// 코드·마디·가사는 145_기쁘다구주오셨네.png(새찬송가 115장, D장조 2/4 오선 악보) 기준
+// 마지막 "아멘"(G·D 두 마디)은 4절 끝에만 부르므로 한 줄로
+const TIME = "2/4";
+// 2/4박자라 마디가 짧아서 한 줄에 6마디씩 (요청)
+const PER_ROW = 6;
+// 2/4박자: "^"로 한 마디를 1박·2박 두 칸으로 나누고, 칸마다 첫 글자(또는 "-")에 형광 V 표시 (요청)
+// 박 위치는 오선 악보의 음표 기준
+const rows0 = [
+  ["[D]기^쁘다 | 구^세주 | 온^세상 | 은^혜와", "[D]구^- 주 | 탄^- 생 | 죄^- 를 | 진^- 리", "[A7]오^셨 | 했^으 | 사^하 | 되^신", "[D]네^- 만 | 니^- 다 | 려^- 주 | 주^- 다"],
+  ["[G]백^- 성 | 찬^- 양 | 예^- 수 | 주^- 관", "[A]맞^- 으 | 하^- 여 | 오^- 셨 | 하^- 시", "[D]라^- / 온 | 라^- / 이 | 네^- / 죄 | 니^- / 만", "[D]교-^회- | 세-^상- | 와-^슬- | 국-^백-"],
+  ["[D]여-^- 다 | 에-^- 만 | 픔-^- 몰 | 성-^- 구", "[D]일-^어- | 물-^들- | 아-^내- | 주-^앞-", "[D]나-^- 다 | 아-^- 다 | 고-^- 다 | 에-^- 다", "[D]찬양^하여- | 화답^하여- | 구원^하시- | 경배^하여-"],
+  ["[D]라^- / 다- | 라^- / 다- | 네^- / 다- | 라^- / 다-", "[A]찬양^하여- | 화답^하여- | 구원^하시- | 경배^하여-", "[A]라^- 다- | 라^- 다- | 네^- 다- | 라^- 다-", "[D]찬-^양 | 화-^답 | 구-^원 | 경-^배"],
+  ["[D]찬-^- 양 | 화-^- 답 | 구-^- 원 | 경-^- 배", "[A7]하^여 | 하^여 | 하^시 | 하^여", "[D]라^- | 라^- | 네^- | 라^-", "[G]아^-"],
+  ["[D]멘^-"],
+];
+const flat = rows0.flat();
+const rows = [];
+for (let i = 0; i < flat.length; i += PER_ROW) rows.push(flat.slice(i, i + PER_ROW));
+
+// 원본 D장조를 반음 단위로 옮김 (D→D: 0, D→G: +5, D→A: +7)
+const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FLAT = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
+function transpose(chord, steps) {
+  const m = chord.match(/^([A-G][#b]?)(.*)$/);
+  const root = FLAT[m[1]] || m[1];
+  return NOTES[(NOTES.indexOf(root) + steps + 12) % 12] + m[2];
+}
+// 코드 줄 순서: 위에서부터 D·G·A (rule.txt 2)
+const KEYS = [["d", 0, "D장조: D G A"], ["g", 5, "G장조: G C D"], ["a", 7, "A장조: A D E"]];
+// 코드 번호는 맨 위 D장조 줄에만: D=1, G=4, A=5
+const DEGREE_KEY = "d", DEGREE_ROOT = "D";
+const DEGREES = { 0: "1", 1: "2", 2: "2", 3: "3", 4: "3", 5: "4", 6: "5", 7: "5", 8: "6", 9: "6", 10: "7", 11: "7" };
+function degree(chord) {
+  const r = chord.match(/^[A-G][#b]?/)[0];
+  return DEGREES[(NOTES.indexOf(FLAT[r] || r) - NOTES.indexOf(DEGREE_ROOT) + 12) % 12] || "";
+}
+// 1·4·5 코드만 쓰는 곡이므로 7코드는 기본 코드로 (rule.txt 3): A7 → A
+const label = c => c.replace(/7$/, "");
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+document.querySelector(".legend").innerHTML = KEYS.map(([cls, , name]) => `<div style="color:var(--${cls})">${name}</div>`).join("");
+
+// 한 마디 그리기: 마디 가운데 [코드]에서 칸을 나누고, 각 칸은 다시 박("^")마다 칸으로 나눔
+// 가사는 "1절 | 2절 | ..." 위아래로, 모든 절이 같으면 한 줄로 (rule.txt 7)
+function renderMeasure(m, text, firstOfSong) {
+  const parts = text.split(/(?=\[)/);
+  // 끄는 박 "-"는 가사의 약 2/3 크기로 (rule.txt 8)
+  const dash = s => esc(s).replace(/-/g, '<small class="dash">-</small>');
+  // 박 칸의 첫 글자(또는 "-")에 형광 V 표시
+  const markAccent = s => {
+    let done = false;
+    return [...s].map(c => {
+      if (!done && /[가-힣-]/.test(c)) { done = true; return c === "-" ? '<em class="beat dash">-</em>' : `<em>${c}</em>`; }
+      return c === "-" ? '<small class="dash">-</small>' : esc(c);
+    }).join("");
+  };
+  parts.forEach((part, k) => {
+    const [, chord, lyric] = part.match(/^\[([^\]]+)\]\s*(.*)$/);
+    let verses = lyric.split("|").map(v => v.trim());
+    if (verses.length > 1 && verses.every(v => v === verses[0])) verses = [verses[0]];
+    const vb = verses.map(v => v.split("^"));
+    const nBeats = Math.max(...vb.map(b => b.length));
+    const chordText = (steps, cls) => {
+      const c = transpose(chord, steps);
+      return `<span class="cn">${label(c)}</span>` + (cls === DEGREE_KEY ? `<span class="deg">${degree(c)}</span>` : "");
+    };
+    for (let b = 0; b < nBeats; b++) {
+      const p = document.createElement("div");
+      const first = firstOfSong && k === 0 && b === 0;
+      p.className = "part" + (first ? " has-time" : "");
+      // 박 칸 폭 = 그 박의 가장 긴 가사 폭 + 남는 폭을 고르게 (rule.txt 8)
+      p.style.flex = "1 1 auto";
+      p.style.minWidth = "calc(var(--ly) * 1.2)"; // "-" 칸도 V가 보이게
+      const time = first ? `<span class="time">${TIME.replace("/", "<br>")}</span>` : "";
+      const lines = vb.map(beats => {
+        const [here, next] = (beats[b] || "").trim().split(/\s*\/\s*/);
+        return `<div class="ly"><span>${markAccent(here || "") || " "}</span>${next ? `<span class="next">${dash(next)}</span>` : ""}</div>`;
+      }).join("");
+      p.innerHTML = `<div class="ch">${time}${KEYS.map(([cls, steps]) => `<i class="${cls}">${b === 0 ? chordText(steps, cls) : ""}</i>`).join("")}</div>`
+        + `<div class="lys">${lines}</div>`;
+      m.appendChild(p);
+    }
+  });
+}
+
+const song = document.getElementById("song");
+rows.forEach((measures, r) => {
+  const row = document.createElement("div");
+  row.className = "row";
+  measures.forEach((text, i) => {
+    const m = document.createElement("div");
+    const isLastOfSong = r === rows.length - 1 && i === measures.length - 1;
+    m.className = "m" + (i === measures.length - 1 ? " last" : "") + (isLastOfSong ? " end" : "");
+    renderMeasure(m, text, r === 0 && i === 0);
+    row.appendChild(m);
+  });
+  song.appendChild(row);
+});
+
+// 글꼴을 다 불러온 뒤에 크기를 계산 (rule.txt 8)
+Promise.all([document.fonts.load('bold 20px NanumSquareNeo'), document.fonts.load('800 20px NanumSquareNeo'), document.fonts.load('800 20px "Atkinson Hyperlegible"')]).then(() => {
+const page = document.querySelector(".page");
+const root = document.documentElement.style;
+const lyEls = [...document.querySelectorAll(".ly")];
+const chEls = [...document.querySelectorAll(".ch")];
+const lyWidthOK = () => lyEls.every(l => l.scrollWidth <= l.clientWidth);
+function fits(ly, ch) {
+  root.setProperty("--ly", ly + "px");
+  root.setProperty("--ch", ch.toFixed(1) + "px");
+  return chEls.every(c => c.scrollWidth <= c.closest(".m").clientWidth) && lyWidthOK() && page.scrollHeight <= page.clientHeight;
+}
+// 1) 가사가 줄바꿈 없이 가장 긴 마디에 들어가는 가장 큰 크기
+//    코드는 가사와 같은 크기(20px 이상, rule.txt 8). 그러면 가사가 22px보다 작아질 때는
+//    가사가 작은 곡이므로 코드를 가사의 0.8배(16px 이상)로 줄임 (rule.txt 8)
+root.setProperty("--sy", "1");
+function largest(chFor) {
+  for (let ly = 44; ly >= 9; ly -= 0.25) if (fits(ly, chFor(ly))) return ly;
+  return 9;
+}
+let chFor = ly => Math.max(ly, 20);
+let best = largest(chFor);
+if (best < 22) { chFor = ly => Math.max(ly * 0.8, 16); best = largest(chFor); }
+// 가사 크기를 막은 것이 마디 폭인지(긴 마디에 막힘) 확인
+root.setProperty("--ly", (best + 0.25) + "px");
+const blockedByWidth = !lyWidthOK();
+best = Math.floor(best * 0.97 * 4) / 4;
+const ch0 = chFor(best);
+// 2) 남는 높이는 먼저 가사 세로 늘림(최대 3배)에
+let sy = 1;
+for (let s = 3; s >= 1; s -= 0.02) {
+  root.setProperty("--sy", s.toFixed(2));
+  if (fits(best, ch0)) { sy = s; break; }
+}
+root.setProperty("--sy", sy.toFixed(2));
+// 3) 그래도 남으면 코드를 키움
+let chBest = ch0;
+for (let ch = best * 2; ch >= ch0; ch -= 0.25) {
+  if (fits(best, ch)) { chBest = ch; break; }
+}
+fits(best, chBest);
+// 3-1) 가사가 작은데 긴 마디에 막혔을 때만, 칸마다 남는 폭만큼 그 칸의 가사를 키움 (rule.txt 8)
+const lysEls = [...document.querySelectorAll(".lys")];
+const ks = lysEls.map(lys => {
+  let k = sy;
+  for (const l of lys.querySelectorAll(".ly")) {
+    const spans = [...l.children];
+    const em = parseFloat(getComputedStyle(l).fontSize);
+    const w = spans.reduce((s, e) => s + e.getBoundingClientRect().width, 0) + (spans.length > 1 ? 4 + em : 0);
+    if (w > 0 && /\S/.test(l.textContent)) k = Math.min(k, (l.clientWidth / w) * 0.9);
+  }
+  return Math.max(1, k);
+});
+const sorted = [...ks].sort((a, b) => a - b);
+const median = sorted[Math.floor(sorted.length / 2)] || 1;
+if (blockedByWidth && median >= 1.2) lysEls.forEach((lys, i) => lys.style.setProperty("--k", ks[i].toFixed(3)));
+// 4) 그래도 남는 높이는 줄 사이에만 나누고, 마지막 줄 아래에는 두지 않음
+const rowEls = [...document.querySelectorAll(".row")];
+const pageBottom = page.getBoundingClientRect().bottom - parseFloat(getComputedStyle(page).paddingBottom);
+const free = pageBottom - song.getBoundingClientRect().bottom - 4;
+if (free > 0 && rowEls.length > 1) rowEls.slice(0, -1).forEach(r => r.style.marginBottom = `${4 + free / (rowEls.length - 1)}px`);
+rowEls[rowEls.length - 1].style.marginBottom = "0px";
+});
+</script>
+</body>
+</html>
